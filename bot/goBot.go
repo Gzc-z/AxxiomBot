@@ -30,6 +30,18 @@ func NewBot(cfg config.Config) *Bot {
 	}
 }
 
+func (bot *Bot) SessionEvents() {
+	ds := bot.Session
+	handlers := []any{
+		handlers.MessageCreate,
+		handlers.InteractionCreate,
+	}
+	for _, handler := range handlers {
+		ds.AddHandler(handler)
+	}
+	ds.AddHandler(bot.applicationCommandCreate)
+}
+
 func (bot Bot) applicationCommandCreate(s *discordgo.Session, r *discordgo.Ready) {
 	for _, v := range handlers.Commands {
 		_, err := s.ApplicationCommandCreate(s.State.User.ID, bot.GuildID, v)
@@ -38,16 +50,4 @@ func (bot Bot) applicationCommandCreate(s *discordgo.Session, r *discordgo.Ready
 		}
 		fmt.Printf("/%s created\n", v.Name)
 	}
-}
-
-func (bot *Bot) SessionEvents() {
-	ds := bot.Session
-	discordHandlers := []any{
-		handlers.MessageCreate,
-		handlers.InteractionCreate,
-	}
-	for _, handler := range discordHandlers {
-		ds.AddHandler(handler)
-	}
-	ds.AddHandler(bot.applicationCommandCreate)
 }

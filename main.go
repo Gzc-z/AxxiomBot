@@ -15,7 +15,6 @@ import (
 func main() {
 	discordBot := bot.NewBot(config.Load())
 	ds := discordBot.Session
-
 	ds.Identify.Intents |= discordgo.IntentMessageContent
 	discordBot.SessionEvents()
 
@@ -29,7 +28,6 @@ func main() {
 	signal.Notify(stop, os.Interrupt)
 	<-stop
 
-	// Temp
 	cmds, err := ds.ApplicationCommands(ds.State.User.ID, discordBot.GuildID)
 	if err != nil {
 		log.Println(err)

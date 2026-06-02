@@ -1,0 +1,71 @@
+{
+    "content": "",
+	"embeds": [
+		{
+			"type": "rich",
+			"title": "pts command",
+			"description": "## grupo de informações",
+			"color": 16777215,
+			"footer": {
+				"text": ""
+			},
+			"fields": [
+				{
+					"name": "Criar grupo",
+					"value": "Cria um novo grupo :)",
+					"inline": false
+				},
+				{
+					"name": "Selecionar grupo",
+					"value": "seleção e configuração do grupo\naparece somente se tiver um grupo",
+					"inline": false
+				},
+                {
+					"name": "Deletar grupo",
+					"value": "deleta obviamente o grupo",
+					"inline": false
+                }
+			]
+		}
+	],
+	"tts": false,
+	"components": [
+        {
+            "id": 277353,
+            "components": [
+				{
+					"custom_id": "selectGroupTag",
+					"placeholder": "Selecionar grupo",
+					"options": [
+						{
+							"label": "jogos",
+							"value": "games",
+							"description": "Grupo de pontuação de jogos",
+							"default": false
+						}
+					],
+					"disabled": false,
+					"type": 3
+				}
+            ]
+        },
+        {
+            "components": [
+                {
+                    "custom_id": "newGroupTag",
+                    "style": 3,
+                    "label": "Criar Grupo",
+                    "type": 2
+                },
+                {
+                    "custom_id": "delGroupTag",
+                    "style": 4,
+                    "label": "Deletar Grupo",
+                    "type": 2
+                }
+            ],
+            "type": 1
+        }
+	],
+	"sticker_ids": null
+}

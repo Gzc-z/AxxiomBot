@@ -8,4 +8,8 @@ var Commands = []*discordgo.ApplicationCommand{
 		Description: "example command",
 		Type:        discordgo.ChatApplicationCommand,
 	},
+	{
+		Name:        "pts",
+		Description: "points system",
+	},
 }
