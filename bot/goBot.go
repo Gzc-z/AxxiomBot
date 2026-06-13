@@ -37,9 +37,9 @@ func (bot *Bot) SessionEvents() {
 		handlers.InteractionCreate,
 	}
 	for _, handler := range handlers {
-		ds.AddHandler(handler)
+		go ds.AddHandler(handler)
 	}
-	ds.AddHandler(bot.applicationCommandCreate)
+	go ds.AddHandler(bot.applicationCommandCreate)
 }
 
 func (bot Bot) applicationCommandCreate(s *discordgo.Session, r *discordgo.Ready) {

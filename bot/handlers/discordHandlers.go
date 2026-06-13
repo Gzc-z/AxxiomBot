@@ -16,7 +16,9 @@ var (
 	messageComponentInteractions = map[string]funcHandler{
 		"newGroupTag": interactions.PtsNewGroupTag,
 	}
-	// submitModalInteraction
+	submitModalInteractions = map[string]funcHandler{
+		"submitNewGroupTag": interactions.SubmitNewGrouptag,
+	}
 )
 
 func InteractionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -24,15 +26,18 @@ func InteractionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	case discordgo.InteractionApplicationCommand:
 		data := i.ApplicationCommandData()
 		if handler, ok := commandInteractions[data.Name]; ok {
-			handler(s, i)
+			go handler(s, i)
 		}
 	case discordgo.InteractionMessageComponent:
 		data := i.MessageComponentData()
 		if handler, ok := messageComponentInteractions[data.CustomID]; ok {
-			handler(s, i)
+			go handler(s, i)
 		}
 	case discordgo.InteractionModalSubmit:
-		// data := i.ModalSubmitData()
+		data := i.ModalSubmitData()
+		if handler, ok := submitModalInteractions[data.CustomID]; ok {
+			go handler(s, i)
+		}
 	}
 }
 
