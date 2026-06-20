@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -15,7 +16,7 @@ var (
 	file    string
 )
 
-type iResponseDataStruct struct {
+type responseDataStruct struct {
 	Content    string                    `json:"content,omitempty"`
 	Embeds     []*discordgo.MessageEmbed `json:"embeds"`
 	Components []discordgo.ActionsRow    `json:"components"`
@@ -31,24 +32,41 @@ type tag struct {
 
 type groupTags struct {
 	Name        string `json:"name"`
-	Description string `json:"description"`
+	Description string `json:"description,omitempty"`
 	Tags        []*tag `json:"tags,omitempty"`
 }
 
-func PtsCommandResponse(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	content, err := os.ReadFile(dirResp + "ptsResponse.json")
+func PtsCommandResponse(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+	groupTagsFile := dirData + "groupTags.json"
+	groupContent, err := os.Open(groupTagsFile)
+	defer groupContent.Close()
 	if err != nil {
 		fmt.Println(err)
 	}
-
-	var data iResponseDataStruct
-	json.Unmarshal(content, &data)
-
-	var components []discordgo.MessageComponent
-	for _, comp := range data.Components {
-		components = append(components, comp)
+	file = dirResp + "ptsResponse.json"
+	content, err := os.ReadFile(file)
+	if err != nil {
+		fmt.Println(err)
 	}
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	var data responseDataStruct
+	var components []discordgo.MessageComponent
+	var groupTags []groupTags
+
+	json.Unmarshal(content, &data)
+	json.NewDecoder(groupContent).Decode(groupTags)
+	// PERF: perf issue flag:  nested code and bad structure
+	for _, row := range data.Components {
+		for _, comp := range row.Components {
+			if len(groupTags) == 0 {
+				if comp.Type() == 0x3 { // discordgo textinput id
+					continue
+				}
+			}
+			components = append(components, row)
+			break
+		}
+	}
+	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content:    data.Content,
@@ -56,23 +74,28 @@ func PtsCommandResponse(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Components: components,
 		},
 	})
+	if err != nil {
+		fmt.Println(err)
+	}
+	return nil
 }
 
-func PtsNewGroupTag(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	data := i.MessageComponentData()
+func PtsGroupTagResponse(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	file = dirResp + "groupTagsResponse.json"
 	content, err := os.ReadFile(file)
 	if err != nil {
 		log.Println(err)
 	}
-	var dataStruct iResponseDataStruct
+
+	var dataStruct responseDataStruct
 	json.Unmarshal(content, &dataStruct)
 
 	var components []discordgo.MessageComponent
-	for _, comp := range dataStruct.Components {
-		components = append(components, comp)
+	for _, row := range dataStruct.Components {
+		components = append(components, row)
 	}
 
+	data := i.MessageComponentData()
 	switch data.CustomID {
 	case "newGroupTag":
 		err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -90,58 +113,71 @@ func PtsNewGroupTag(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if err != nil {
 		log.Println(err)
 	}
+	return nil
 }
 
 // TODO: make this func polymorphic
-func attrInputValues(values *[]groupTags, chanInput chan discordgo.TextInput) *[]groupTags {
-	input := <-chanInput
-	keyInput := map[string]groupTags{
-		"Name":        {Name: input.Value},
-		"Description": {Description: input.Value},
+func getInputValues(ch chan<- *discordgo.TextInput, wg *sync.WaitGroup, i discordgo.InteractionCreate) {
+	data := i.ModalSubmitData()
+	for _, row := range data.Components {
+		for _, component := range row.(*discordgo.ActionsRow).Components {
+			input, ok := component.(*discordgo.TextInput)
+			if !ok {
+				continue
+			}
+			defer wg.Done()
+			ch <- input
+		}
 	}
-	*values = append(*values, keyInput[input.CustomID])
-	return values
 }
 
-func SubmitNewGrouptag(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	data := i.ModalSubmitData()
+func SubmitNewGrouptag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+	var wg sync.WaitGroup
+	var input discordgo.TextInput
+	var values *[]groupTags
+	// data := i.ModalSubmitData()
+
 	file = dirData + "groupTags.json"
 	content, err := os.ReadFile(file)
 	if err != nil {
 		fmt.Println(err)
 	}
-	values := make([]groupTags, 0, 2)
-	json.Unmarshal(content, &values)
-	ch := make(chan discordgo.TextInput, 2)
-	for _, row := range data.Components {
-		for _, component := range row.(*discordgo.ActionsRow).Components {
-			if input, ok := component.(discordgo.TextInput); ok {
-				ch <- input
-			}
-		}
-		attrInputValues(&values, ch)
+
+	// groupTag defn and limit
+	gtValues := make([]groupTags, 40)
+	err = json.Unmarshal(content, &gtValues)
+	if err != nil {
+		fmt.Println(err)
+		return err
 	}
-	// for _, i := range values {
-	// 	fmt.Println(i.Name)
-	// }
-	newContext, _ := json.MarshalIndent(values, "", "	")
+
+	wg.Add(3)
+	ch := make(chan *discordgo.TextInput, 3)
+
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	go func() {
+		getInputValues(ch, &wg, *i)
+	}()
+
+	// NOTE: n precisa disso.. e sim de uma struct
+	keyInput := map[string]groupTags{
+		"Name":        {Name: input.Value},
+		"Description": {Description: input.Value},
+	}
+	for input := range ch {
+		defer wg.Done()
+
+		*values = append(*values, keyInput[input.CustomID])
+		// fmt.Println(input.CustomID)
+		// fmt.Println(keyInput[input.CustomID])
+	}
+	newContext, _ := json.MarshalIndent(gtValues, "", "	")
 	fmt.Println(string(newContext))
 
 	// os.WriteFile(file, newContext, 0o644)
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "criado com sucesso",
-			Flags:   discordgo.MessageFlagsEphemeral,
-		},
-	})
-}
-
-func AxiomTest(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "ainda em desenvolvimento!!",
-		},
-	})
+	return nil
 }

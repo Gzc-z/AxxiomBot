@@ -1,42 +1,54 @@
 package handlers
 
 import (
+	"fmt"
+	"os"
+
 	"axiom/bot/interactions"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-type funcHandler func(*discordgo.Session, *discordgo.InteractionCreate)
+type funcICHandler func(*discordgo.Session, *discordgo.InteractionCreate) error
 
 var (
-	commandInteractions = map[string]funcHandler{
-		"axiom-test": interactions.AxiomTest,
-		"pts":        interactions.PtsCommandResponse,
+	commandInteractions = map[string]funcICHandler{
+		"pts": interactions.PtsCommandResponse,
 	}
-	messageComponentInteractions = map[string]funcHandler{
-		"newGroupTag": interactions.PtsNewGroupTag,
+	messageComponentInteractions = map[string]funcICHandler{
+		"newGroupTag": interactions.PtsGroupTagResponse,
 	}
-	submitModalInteractions = map[string]funcHandler{
+	submitModalInteractions = map[string]funcICHandler{
 		"submitNewGroupTag": interactions.SubmitNewGrouptag,
 	}
 )
 
+func interactionCreateErrors(handler funcICHandler, s *discordgo.Session, i *discordgo.InteractionCreate) {
+	err := handler(s, i)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+// TODO: implement fallback response
 func InteractionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	// s.FollowupMessageCreate()
 	switch i.Type {
 	case discordgo.InteractionApplicationCommand:
 		data := i.ApplicationCommandData()
 		if handler, ok := commandInteractions[data.Name]; ok {
-			go handler(s, i)
+			go interactionCreateErrors(handler, s, i)
 		}
 	case discordgo.InteractionMessageComponent:
 		data := i.MessageComponentData()
 		if handler, ok := messageComponentInteractions[data.CustomID]; ok {
-			go handler(s, i)
+			go interactionCreateErrors(handler, s, i)
 		}
 	case discordgo.InteractionModalSubmit:
 		data := i.ModalSubmitData()
 		if handler, ok := submitModalInteractions[data.CustomID]; ok {
-			go handler(s, i)
+			go interactionCreateErrors(handler, s, i)
 		}
 	}
 }

@@ -31,7 +31,6 @@
 	"tts": false,
 	"components": [
         {
-            "id": 277353,
             "components": [
 				{
 					"custom_id": "selectGroupTag",

@@ -4,12 +4,9 @@ import "github.com/bwmarrin/discordgo"
 
 var Commands = []*discordgo.ApplicationCommand{
 	{
-		Name:        "axiom-test",
-		Description: "example command",
-		Type:        discordgo.ChatApplicationCommand,
-	},
-	{
 		Name:        "pts",
 		Description: "points system",
+		Type:        discordgo.ChatApplicationCommand,
+		// Version:     "v1.0", not yet
 	},
 }
