@@ -14,6 +14,11 @@ type Config struct {
 	GuildID string
 }
 
+func GetGuildID() string {
+	cfg := Load()
+	return cfg.GuildID
+}
+
 func Load() Config {
 	err := godotenv.Load()
 	if err != nil {

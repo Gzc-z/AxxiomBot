@@ -16,7 +16,8 @@ var (
 		"pts": interactions.PtsCommandResponse,
 	}
 	messageComponentInteractions = map[string]funcICHandler{
-		"newGroupTag": interactions.PtsGroupTagResponse,
+		"newGroupTag":    interactions.PtsGroupTagResponse,
+		"selectGroupTag": interactions.PtsGroupTagResponse,
 	}
 	submitModalInteractions = map[string]funcICHandler{
 		"submitNewGroupTag": interactions.SubmitNewGrouptag,
@@ -26,14 +27,13 @@ var (
 func interactionCreateErrors(handler funcICHandler, s *discordgo.Session, i *discordgo.InteractionCreate) {
 	err := handler(s, i)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println('\n', err)
 		os.Exit(1)
 	}
 }
 
 // TODO: implement fallback response
 func InteractionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	// s.FollowupMessageCreate()
 	switch i.Type {
 	case discordgo.InteractionApplicationCommand:
 		data := i.ApplicationCommandData()

@@ -8,6 +8,8 @@ require (
 )
 
 require (
+	github.com/OGCraft-Eu/discordgo-componentsv2 v0.0.0-20251206171650-78605eb8e374 // indirect
+	github.com/bwmarrin/snowflake v0.3.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/sys v0.46.0 // indirect
