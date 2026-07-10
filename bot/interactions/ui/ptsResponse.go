@@ -1,8 +1,24 @@
 package ui
 
 import (
-	componentsv2 "github.com/OGCraft-Eu/discordgo-componentsv2"
+	"fmt"
+
+	"axiom/bot/interactions/models"
+
 	"github.com/bwmarrin/discordgo"
+)
+
+type ptr interface {
+	int | bool | discordgo.SeparatorSpacingSize
+}
+
+func pointer[pointer ptr](i pointer) *pointer {
+	return &i
+}
+
+var (
+	largeSpace = discordgo.SeparatorSpacingSizeLarge
+	smallSpace = discordgo.SeparatorSpacingSizeSmall
 )
 
 func PtsResponse() *discordgo.InteractionResponseData {
@@ -50,16 +66,17 @@ func PtsResponse() *discordgo.InteractionResponseData {
 	}
 }
 
-func GroupsTagResponse() *discordgo.InteractionResponseData {
-	return &discordgo.InteractionResponseData{
-		Content:  "",
-		CustomID: "submitNewGroupTag",
-		Title:    "Criando novo grupo",
-		Components: []discordgo.MessageComponent{
-			discordgo.ActionsRow{
-				Components: []discordgo.MessageComponent{
+func GroupsTagResponse() *discordgo.InteractionResponse {
+	return &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseModal,
+		Data: &discordgo.InteractionResponseData{
+			Content:  "",
+			CustomID: "submitNewGroupTag",
+			Title:    "Criando novo grupo",
+			Components: []discordgo.MessageComponent{
+				newActionRow(
 					discordgo.TextInput{
-						CustomID:    "Name",
+						CustomID:    "name",
 						Label:       "Nome",
 						Placeholder: "Name",
 						Style:       1,
@@ -67,12 +84,10 @@ func GroupsTagResponse() *discordgo.InteractionResponseData {
 						MinLength:   0,
 						MaxLength:   45,
 					},
-				},
-			},
-			discordgo.ActionsRow{
-				Components: []discordgo.MessageComponent{
+				),
+				newActionRow(
 					discordgo.TextInput{
-						CustomID:    "Description",
+						CustomID:    "description",
 						Label:       "Descrição",
 						Placeholder: "Description",
 						Style:       2,
@@ -80,32 +95,178 @@ func GroupsTagResponse() *discordgo.InteractionResponseData {
 						MinLength:   0,
 						MaxLength:   145,
 					},
-				},
+				),
 			},
 		},
 	}
 }
 
-func TagSelectMenuResponse() []discordgo.MessageComponent {
-	return []discordgo.MessageComponent{
-		componentsv2.NewContainerBuilder().
-			SetAccentColor(0x00ff00).
-			AddComponent(
-				componentsv2.NewTextDisplayBuilder().
-					SetContent("**Lorem ipsum sit dolor**").
-					Build(),
-			).
-			AddComponent(
-				discordgo.ActionsRow{
-					Components: []discordgo.MessageComponent{
-						discordgo.Button{
-							Label:    "adicionar",
-							Style:    discordgo.SecondaryButton,
-							CustomID: "add",
-							Emoji:    &discordgo.ComponentEmoji{Name: "🎵 "},
-						},
-					},
+func TagSelectMenuResponse(group models.GroupTags) *discordgo.InteractionResponse {
+	comp := []discordgo.MessageComponent{
+		newContainer(
+			pointer(0x4c4bff), // AccentColor
+			textDisplay(fmt.Sprintf("**Editando:** `#%s`", group.Name)),
+			separator(true, smallSpace),
+
+			textDisplay("**Descrição**"),
+			textDisplay("> "+group.Description),
+
+			separator(true, largeSpace),
+			newActionRow(
+				discordgo.Button{
+					Label:    "Criar Tag",
+					Style:    discordgo.SuccessButton,
+					CustomID: "createTag",
+					Emoji:    &discordgo.ComponentEmoji{Name: "➕"},
 				},
-			).Build(),
+				// discordgo.Button{
+				// 	Label:    "editar",
+				// 	Style:    discordgo.PrimaryButton,
+				// 	CustomID: "manageTags",
+				// },
+				// discordgo.Button{
+				// 	Label:    "Grupo",
+				// 	Style:    discordgo.SecondaryButton,
+				// 	CustomID: "manageGroup",
+				// },
+			),
+		),
+	}
+	if len(group.Tags) > 0 {
+		comp = append(comp,
+			newContainer(
+				pointer(0x4c4bff), // AccentColor
+				displayListModel(group.Tags)...,
+			),
+		)
+	}
+	return &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Flags:      discordgo.MessageFlagsIsComponentsV2,
+			Components: comp,
+		},
+	}
+}
+
+func ModalTag() *discordgo.InteractionResponse {
+	return &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseModal,
+		Data: &discordgo.InteractionResponseData{
+			Content:  "",
+			CustomID: "submitNewTag",
+			Title:    "Criando nova Tag",
+			Components: []discordgo.MessageComponent{
+				newActionRow(
+					discordgo.TextInput{
+						CustomID:    "tagName",
+						Label:       "Nome",
+						Placeholder: "Tag",
+						Style:       1,
+						Required:    true,
+						MinLength:   0,
+						MaxLength:   45,
+					},
+				),
+				newActionRow(
+					discordgo.TextInput{
+						CustomID:    "tagDescription",
+						Label:       "Descrição",
+						Placeholder: "Description",
+						Style:       2,
+						Required:    false,
+						MinLength:   0,
+						MaxLength:   145,
+					},
+				),
+				newActionRow(
+					discordgo.TextInput{
+						CustomID:    "tagValue",
+						Label:       "valor",
+						Placeholder: "0.8   .3   10   20",
+						Style:       1,
+						Required:    false,
+						MinLength:   0,
+						MaxLength:   8, // float32 max int
+					},
+				),
+			},
+		},
+	}
+}
+
+//	func ResponseTag() *discordgo.InteractionResponse {
+//		return &discordgo.InteractionResponse{
+//			Type: discordgo.InteractionResponseChannelMessageWithSource,
+//			Data: &discordgo.InteractionResponseData{
+//				Components: []discordgo.MessageComponent{
+//					newActionRow(
+//						discordgo.Button{},
+//					),
+//				},
+//			},
+//		}
+//	}
+//
+
+// TODO: do polymorphism
+// 'see-more Tags' whether lenght about above a set number
+func displayListModel(tags []*models.Tag) []discordgo.MessageComponent {
+	var model []discordgo.MessageComponent
+	for _, tag := range tags {
+		// model = []discordgo.MessageComponent{
+		// 	discordgo.Button{},
+		// 	textDisplay(tag.TagName),
+		// }
+		model = append(model,
+			textDisplay("**Nome** "+tag.TagName),
+			textDisplay("**Descrição** "+tag.TagDescription),
+			textDisplay(fmt.Sprint("**Valor** ", tag.TagValue)),
+			separator(true, smallSpace),
+		)
+	}
+	// row := newSection(model...)
+	return model
+}
+
+func separator(b bool, space discordgo.SeparatorSpacingSize) discordgo.Separator {
+	return discordgo.Separator{
+		Divider: pointer(b),
+		Spacing: pointer(space),
+	}
+}
+
+// TODO: verify and split into pieces
+// search for " " after or before
+func textDisplay[T any](txt T) discordgo.TextDisplay {
+	return discordgo.TextDisplay{
+		Content: fmt.Sprint(txt),
+	}
+}
+
+func newSection(ac discordgo.Button, txt ...discordgo.TextDisplay) discordgo.Section {
+	if len(txt) > 3 {
+		fmt.Println("WARN: muitos TextDisplay")
+	}
+	var comp []discordgo.MessageComponent
+	for _, c := range txt {
+		comp = append(comp, c)
+	}
+	return discordgo.Section{
+		Components: comp,
+		Accessory:  ac,
+	}
+}
+
+func newActionRow(comp ...discordgo.MessageComponent) discordgo.ActionsRow {
+	return discordgo.ActionsRow{
+		Components: comp,
+	}
+}
+
+func newContainer(AC *int, children ...discordgo.MessageComponent) discordgo.Container {
+	return discordgo.Container{
+		AccentColor: AC,
+		Components:  children,
 	}
 }

@@ -12,20 +12,25 @@ import (
 type funcICHandler func(*discordgo.Session, *discordgo.InteractionCreate) error
 
 var (
+	// for on strings assigning to a func type
 	commandInteractions = map[string]funcICHandler{
 		"pts": interactions.PtsCommandResponse,
 	}
 	messageComponentInteractions = map[string]funcICHandler{
 		"newGroupTag":    interactions.PtsGroupTagResponse,
-		"selectGroupTag": interactions.PtsGroupTagResponse,
+		"selectGroupTag": interactions.PtsGroupTagResponse, //
+		"createTag":      interactions.PtsGroupTagResponse,
 	}
 	submitModalInteractions = map[string]funcICHandler{
 		"submitNewGroupTag": interactions.SubmitNewGrouptag,
+		"submitNewTag":      interactions.SubmitNewTag,
 	}
 )
 
+// TODO: maybe use generics
 func interactionCreateErrors(handler funcICHandler, s *discordgo.Session, i *discordgo.InteractionCreate) {
 	err := handler(s, i)
+	// TODO: write errors in logs
 	if err != nil {
 		fmt.Println('\n', err)
 		os.Exit(1)
