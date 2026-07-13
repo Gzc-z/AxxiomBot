@@ -3,9 +3,12 @@
 # o que é
 
 discord bot multifuncional, projetado para facilitar processos, tarefas e problemas comuns em comunidades.
-**ainda em desenvolvimento**
 
-# como usar
+futuramente pretendo possivelmente facilitar a criação de bots discord, criando uma infraestrutura
+própria que se estenderá com outros projetos.
+
+# uso
+
 
 # o nome
 
