@@ -16,7 +16,7 @@ o nome "Axiom" veio, como algo verdadeiro sem necessidade de provas, como declar
 
 # checklist
 
-* [ ] escalar o bot para diferentes tags com diferentes propositos
+* [x] escalar o bot para diferentes tags com diferentes propositos
 * [ ] atualizar README e documentações
-* [ ] documentar melhor README
+* [ ] arrumar erro de chamar pts antes de criar groupTags
 * [ ] colocar mais coisas na checklist

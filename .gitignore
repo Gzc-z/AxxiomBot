@@ -1,4 +1,8 @@
-bin
 docs
-.env
 info
+infos
+
+bin
+.env
+
+bot/interactions/data/groupTags.json
