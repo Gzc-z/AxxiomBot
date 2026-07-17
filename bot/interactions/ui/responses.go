@@ -21,46 +21,48 @@ var (
 	smallSpace = discordgo.SeparatorSpacingSizeSmall
 )
 
-func PtsResponse() *discordgo.InteractionResponseData {
-	return &discordgo.InteractionResponseData{
-		CustomID: "pts_command",
-		Embeds: []*discordgo.MessageEmbed{
-			{
-				Type:        "rich",
-				Title:       "pts command",
-				Description: "## grupo de informações",
-				Color:       16777215,
-				Footer: &discordgo.MessageEmbedFooter{
-					Text: "",
-				},
-				Fields: []*discordgo.MessageEmbedField{
-					{
-						Name:   "Criar grupo",
-						Value:  "Cria um novo grupo :)",
-						Inline: false,
+func PtsResponse() *discordgo.InteractionResponse {
+	return &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			CustomID: "pts_command",
+			Flags:    discordgo.MessageFlagsEphemeral,
+			Embeds: []*discordgo.MessageEmbed{
+				{
+					Type:        "rich",
+					Title:       "pts command",
+					Description: "## grupo de informações",
+					Color:       16777215,
+					Footer: &discordgo.MessageEmbedFooter{
+						Text: "",
 					},
-					{
-						Name:   "Selecionar grupo",
-						Value:  "seleção e configuração do grupo\naparece somente se tiver um grupo",
-						Inline: false,
-					},
-					{
-						Name:   "Deletar grupo",
-						Value:  "deleta obviamente o grupo",
-						Inline: false,
+					Fields: []*discordgo.MessageEmbedField{
+						{
+							Name:   "Criar grupo",
+							Value:  "Cria um novo grupo :)",
+							Inline: false,
+						},
+						// {
+						// 	Name:   "Selecionar grupo",
+						// 	Value:  "seleção e configuração do grupo\naparece somente se tiver um grupo",
+						// 	Inline: false,
+						// },
+						// {
+						// 	Name:   "Deletar grupo",
+						// 	Value:  "deleta obviamente o grupo",
+						// 	Inline: false,
+						// },
 					},
 				},
 			},
-		},
-		Components: []discordgo.MessageComponent{
-			discordgo.ActionsRow{
-				Components: []discordgo.MessageComponent{
+			Components: []discordgo.MessageComponent{
+				newActionRow(
 					discordgo.Button{
 						CustomID: "newGroupTag",
-						Style:    3,
+						Style:    discordgo.SuccessButton,
 						Label:    "Criar Grupo",
 					},
-				},
+				),
 			},
 		},
 	}
@@ -102,49 +104,76 @@ func GroupsTagResponse() *discordgo.InteractionResponse {
 }
 
 func TagSelectMenuResponse(group models.GroupTags) *discordgo.InteractionResponse {
-	comp := []discordgo.MessageComponent{
+	var components []discordgo.MessageComponent
+	components = append(components, newContainer(
+		pointer(0x4c4bff), // AccentColor
+		textDisplay(fmt.Sprintf("**Editando:** `#%s`", group.Name)),
+		separator(true, smallSpace),
+		textDisplay("**Descrição**"),
+		textDisplay("> "+group.Description),
+	))
+	if len(group.Tags) == 0 {
+		components = append(components,
+			textDisplay("Está meio vazio por aqui"),
+		)
+	}
+	components = append(components,
+		displayListModel(group.Tags)...,
+	)
+	components = append(components,
 		newContainer(
-			pointer(0x4c4bff), // AccentColor
-			textDisplay(fmt.Sprintf("**Editando:** `#%s`", group.Name)),
-			separator(true, smallSpace),
-
-			textDisplay("**Descrição**"),
-			textDisplay("> "+group.Description),
-
-			separator(true, largeSpace),
+			pointer(0xffffff), // AccentColor
 			newActionRow(
 				discordgo.Button{
-					Label:    "Criar Tag",
-					Style:    discordgo.SuccessButton,
-					CustomID: "createTag",
-					Emoji:    &discordgo.ComponentEmoji{Name: "➕"},
+					CustomID: "left",
+					Label:    "⬅️",
+					Style:    discordgo.SecondaryButton,
 				},
 				// discordgo.Button{
-				// 	Label:    "editar",
+				// 	CustomID: "right",
+				// 	Label:    "➡️",
 				// 	Style:    discordgo.PrimaryButton,
-				// 	CustomID: "manageTags",
-				// },
-				// discordgo.Button{
-				// 	Label:    "Grupo",
-				// 	Style:    discordgo.SecondaryButton,
-				// 	CustomID: "manageGroup",
 				// },
 			),
 		),
-	}
-	if len(group.Tags) > 0 {
-		comp = append(comp,
-			newContainer(
-				pointer(0x4c4bff), // AccentColor
-				displayListModel(group.Tags)...,
-			),
-		)
-	}
+		newActionRow(
+			discordgo.SelectMenu{
+				CustomID: "groupOptions",
+				Options: []discordgo.SelectMenuOption{
+					{
+						Label:       "Criar Tag",
+						Description: "Obviamente cria uma tag",
+						Value:       "createTag",
+						Emoji:       &discordgo.ComponentEmoji{Name: "✅"},
+					},
+					{
+						Label:       "Deletar tag",
+						Description: "Obviamente deleta uma tag",
+						Value:       "delTag",
+						Emoji:       &discordgo.ComponentEmoji{Name: "❌"},
+					},
+					{
+						Label:       "Deletar Grupo",
+						Description: "Obviamente deleta o grupo",
+						Value:       "delGroupTag",
+						Emoji:       &discordgo.ComponentEmoji{Name: "❌"},
+					},
+					{
+						Label:       "Voltar",
+						Description: "Obviamente volta",
+						Value:       "ptsReturn",
+						Emoji:       &discordgo.ComponentEmoji{Name: "⬅️"},
+					},
+				},
+			},
+		),
+	)
 	return &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Flags:      discordgo.MessageFlagsIsComponentsV2,
-			Components: comp,
+			Flags:      discordgo.MessageFlagsIsComponentsV2 | discordgo.MessageFlagsEphemeral,
+			Components: components,
+			Title:      "GroupTag",
 		},
 	}
 }
@@ -195,38 +224,62 @@ func ModalTag() *discordgo.InteractionResponse {
 	}
 }
 
-//	func ResponseTag() *discordgo.InteractionResponse {
-//		return &discordgo.InteractionResponse{
-//			Type: discordgo.InteractionResponseChannelMessageWithSource,
-//			Data: &discordgo.InteractionResponseData{
-//				Components: []discordgo.MessageComponent{
-//					newActionRow(
-//						discordgo.Button{},
-//					),
-//				},
-//			},
-//		}
-//	}
-//
+func DelModalGroup() *discordgo.InteractionResponse {
+	return &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseModal,
+		Data: &discordgo.InteractionResponseData{
+			CustomID: "submitDelGroupTag",
+			Title:    "Deletar group",
+			Components: []discordgo.MessageComponent{
+				textDisplay("Deseja mesmo deletar o grupo?"),
+			},
+		},
+	}
+}
+
+func DelModalTag() *discordgo.InteractionResponse {
+	return &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseModal,
+		Data: &discordgo.InteractionResponseData{
+			CustomID: "submitDelTag",
+			Title:    "Deletar Tag",
+			Components: []discordgo.MessageComponent{
+				newActionRow(
+					discordgo.TextInput{
+						CustomID:    "tagSelected",
+						Label:       "id da tag",
+						Placeholder: "1  2  3  ...",
+						Style:       1,
+						Required:    true,
+						MinLength:   0,
+						MaxLength:   3,
+					},
+				),
+			},
+		},
+	}
+}
 
 // TODO: do polymorphism
 // 'see-more Tags' whether lenght about above a set number
 func displayListModel(tags []*models.Tag) []discordgo.MessageComponent {
 	var model []discordgo.MessageComponent
+	var values []discordgo.MessageComponent
 	for _, tag := range tags {
-		// model = []discordgo.MessageComponent{
-		// 	discordgo.Button{},
-		// 	textDisplay(tag.TagName),
-		// }
-		model = append(model,
-			textDisplay("**Nome** "+tag.TagName),
-			textDisplay("**Descrição** "+tag.TagDescription),
-			textDisplay(fmt.Sprint("**Valor** ", tag.TagValue)),
+		values = []discordgo.MessageComponent{
+			textDisplay(fmt.Sprint("id: ", tag.ID)),
+			textDisplay("**Nome:** " + tag.TagName),
+			textDisplay("**Descrição:** " + tag.TagDescription),
+			textDisplay("**Valor:** " + tag.TagValue),
 			separator(true, smallSpace),
-		)
+		}
+		model = append(model, newContainer(
+			pointer(0x4c4bff), // AccentColor
+			values...,
+		))
 	}
-	// row := newSection(model...)
-	return model
+
+	return model[0:5]
 }
 
 func separator(b bool, space discordgo.SeparatorSpacingSize) discordgo.Separator {

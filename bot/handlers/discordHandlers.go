@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"os"
 
 	"axiom/bot/interactions"
 
@@ -17,13 +16,18 @@ var (
 		"pts": interactions.PtsCommandResponse,
 	}
 	messageComponentInteractions = map[string]funcICHandler{
+		"selectGroupTag": interactions.PtsGroupTagResponse,
 		"newGroupTag":    interactions.PtsGroupTagResponse,
-		"selectGroupTag": interactions.PtsGroupTagResponse, //
+		"delGroupTag":    interactions.PtsGroupTagResponse,
 		"createTag":      interactions.PtsGroupTagResponse,
+		"delTag":         interactions.PtsGroupTagResponse,
+		"ptsReturn":      interactions.PtsCommandResponse,
 	}
 	submitModalInteractions = map[string]funcICHandler{
 		"submitNewGroupTag": interactions.SubmitNewGrouptag,
+		"submitDelGroupTag": interactions.DelGroupTag,
 		"submitNewTag":      interactions.SubmitNewTag,
+		"submitDelTag":      interactions.SubmitDelTag,
 	}
 )
 
@@ -33,7 +37,6 @@ func interactionCreateErrors(handler funcICHandler, s *discordgo.Session, i *dis
 	// TODO: write errors in logs
 	if err != nil {
 		fmt.Println('\n', err)
-		os.Exit(1)
 	}
 }
 
@@ -47,6 +50,12 @@ func InteractionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	case discordgo.InteractionMessageComponent:
 		data := i.MessageComponentData()
+		if data.CustomID == "groupOptions" {
+			if handler, ok := messageComponentInteractions[data.Values[0]]; ok {
+				go interactionCreateErrors(handler, s, i)
+			}
+			break
+		}
 		if handler, ok := messageComponentInteractions[data.CustomID]; ok {
 			go interactionCreateErrors(handler, s, i)
 		}

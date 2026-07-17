@@ -6,16 +6,24 @@ import (
 )
 
 type Tag struct {
-	TagName        string  `json:"tagName"`
-	TagDescription string  `json:"tagDescription,omitempty"`
-	TagValue       float32 `json:"tagValue"`
-	ID             int     `json:"ID"`
+	TagName        string `json:"tagName"`
+	TagDescription string `json:"tagDescription,omitempty"`
+	TagValue       string `json:"tagValue"`
+	ID             int    `json:"ID"`
 }
 type GroupTags struct {
 	Name        string       `json:"name"`
 	Description string       `json:"description,omitempty"`
 	Tags        []*Tag       `json:"tags,omitempty"`
 	ID          snowflake.ID `json:"ID"`
+}
+
+type InternalUniqueValue struct {
+	TagSelected *int `json:"tagSelected"`
+}
+
+func (md *InternalUniqueValue) AsValue() int {
+	return *md.TagSelected
 }
 
 // func CreateTag() *Tag {

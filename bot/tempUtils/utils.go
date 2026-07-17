@@ -6,16 +6,11 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 
 	"axiom/bot/interactions/models"
 
 	"github.com/bwmarrin/discordgo"
 )
-
-type modelInterface interface {
-	models.GroupTags | models.Tag
-}
 
 var (
 	dirResp string = "bot/interactions/ui/"
@@ -24,25 +19,23 @@ var (
 	err     error
 )
 
+type modelInterface interface {
+	models.GroupTags | models.Tag | models.InternalUniqueValue
+}
+
 func GetInputs[model modelInterface](data discordgo.ModalSubmitInteractionData) (*model, error) {
 	keyInput := make(map[string]any)
-	var in float32
 	for _, row := range data.Components {
 		for _, component := range row.(*discordgo.ActionsRow).Components {
 			input, ok := component.(*discordgo.TextInput)
 			if !ok {
+				fmt.Println("WARN: textInput possible error")
 				continue
 			}
 			// TODO: map inputValue -> decision structure
-			if input.CustomID == "TagValue" {
-				input.Value = strings.Replace(input.Value, ",", ".", 1)
-				input.Value = strings.TrimSpace(input.Value)
-				inputParsed, err := strconv.ParseFloat(input.Value, 32)
-				if err != nil {
-					return nil, err
-				}
-				in = float32(inputParsed)
-				keyInput[input.CustomID] = in
+			if input.CustomID == "tagSelected" {
+				value, _ := strconv.Atoi(input.Value)
+				keyInput[input.CustomID] = value
 				continue
 			}
 			keyInput[input.CustomID] = input.Value
