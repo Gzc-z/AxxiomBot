@@ -22,6 +22,8 @@ var (
 		"createTag":      interactions.PtsGroupTagResponse,
 		"delTag":         interactions.PtsGroupTagResponse,
 		"ptsReturn":      interactions.PtsCommandResponse,
+		"leftPage":       interactions.IncrementPage,
+		"rightPage":      interactions.DecrementPage,
 	}
 	submitModalInteractions = map[string]funcICHandler{
 		"submitNewGroupTag": interactions.SubmitNewGrouptag,

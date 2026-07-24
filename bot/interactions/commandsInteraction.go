@@ -20,6 +20,7 @@ var (
 	response *discordgo.InteractionResponse
 
 	groupID snowflake.ID
+	page    uint8
 )
 
 // precisa de permanência temporária
@@ -87,7 +88,7 @@ func SubmitNewTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	inputs.ID = group.Tags[len(group.Tags)-1].ID + 1
 	group.Tags = append(group.Tags, inputs)
 
-	response := ui.TagSelectMenuResponse(*group) // dot
+	response := ui.TagSelectMenuResponse(*group, page)
 	err = s.InteractionRespond(i.Interaction, response)
 	if err != nil {
 		return err
@@ -193,6 +194,27 @@ func DelGroupTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	return nil
 }
 
+func IncrementPage(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+	if page > 10 {
+		return nil
+	}
+	page += 1
+	data := i.MessageComponentData()
+	selectGroupTag(data)
+	return nil
+}
+
+func DecrementPage(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+	if page < 1 {
+		return nil
+	}
+	page -= 1
+	data := i.MessageComponentData()
+	selectGroupTag(data)
+	return nil
+}
+
+// TODO: pagination 2 bellow
 func groupPagination(gtValues []*models.GroupTags, page int) *models.GroupTags {
 	for _, group := range gtValues {
 		if group.ID == groupID {
@@ -218,20 +240,21 @@ func selectGroupTag(data discordgo.MessageComponentInteractionData) *discordgo.I
 		fmt.Println("no data found; returning nil")
 		return nil
 	}
-	var groupTags []models.GroupTags
+	var groupTags []*models.GroupTags
 
 	json.Unmarshal(temputils.OpenGroupTag(), &groupTags)
 
-	for i, r := range groupTags {
-		if r.ID.String() == data.Values[0] { // selectMenu Options
-			response = ui.TagSelectMenuResponse(groupTags[i])
-			groupID = r.ID
+	for _, group := range groupTags {
+		if group.ID.String() == data.Values[0] { // selectMenu Options
+			// group := groupPagination(groupTags, 0)
+			response = ui.TagSelectMenuResponse(*group, page)
+			groupID = group.ID
 		}
 	}
 	return response
 }
 
-// this block append groupTags from the groupTags.json file to ptsResponse.Components index 0
+// this one append groupTags from the groupTags.json file to ptsResponse.Components index 0
 func groupTagsUpdate(slice discordgo.InteractionResponse) *discordgo.InteractionResponse {
 	var groupTags []models.GroupTags
 

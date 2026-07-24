@@ -84,7 +84,7 @@ func GroupsTagResponse() *discordgo.InteractionResponse {
 						Style:       1,
 						Required:    true,
 						MinLength:   0,
-						MaxLength:   45,
+						MaxLength:   85,
 					},
 				),
 				newActionRow(
@@ -95,7 +95,7 @@ func GroupsTagResponse() *discordgo.InteractionResponse {
 						Style:       2,
 						Required:    false,
 						MinLength:   0,
-						MaxLength:   145,
+						MaxLength:   2048,
 					},
 				),
 			},
@@ -103,7 +103,7 @@ func GroupsTagResponse() *discordgo.InteractionResponse {
 	}
 }
 
-func TagSelectMenuResponse(group models.GroupTags) *discordgo.InteractionResponse {
+func TagSelectMenuResponse(group models.GroupTags, page uint8) *discordgo.InteractionResponse {
 	var components []discordgo.MessageComponent
 	components = append(components, newContainer(
 		pointer(0x4c4bff), // AccentColor
@@ -118,22 +118,22 @@ func TagSelectMenuResponse(group models.GroupTags) *discordgo.InteractionRespons
 		)
 	}
 	components = append(components,
-		displayListModel(group.Tags)...,
+		displayListModel(group.Tags, page)...,
 	)
 	components = append(components,
 		newContainer(
 			pointer(0xffffff), // AccentColor
 			newActionRow(
 				discordgo.Button{
-					CustomID: "left",
-					Label:    "⬅️",
+					CustomID: "leftPage",
+					Label:    "◀️",
 					Style:    discordgo.SecondaryButton,
 				},
-				// discordgo.Button{
-				// 	CustomID: "right",
-				// 	Label:    "➡️",
-				// 	Style:    discordgo.PrimaryButton,
-				// },
+				discordgo.Button{
+					CustomID: "rightPage",
+					Label:    "▶️",
+					Style:    discordgo.SecondaryButton,
+				},
 			),
 		),
 		newActionRow(
@@ -262,16 +262,15 @@ func DelModalTag() *discordgo.InteractionResponse {
 
 // TODO: do polymorphism
 // 'see-more Tags' whether lenght about above a set number
-func displayListModel(tags []*models.Tag) []discordgo.MessageComponent {
+func displayListModel(tags []*models.Tag, page uint8) []discordgo.MessageComponent {
 	var model []discordgo.MessageComponent
 	var values []discordgo.MessageComponent
 	for _, tag := range tags {
 		values = []discordgo.MessageComponent{
-			textDisplay(fmt.Sprint("id: ", tag.ID)),
+			textDisplay(fmt.Sprint("**id:** ", tag.ID)),
 			textDisplay("**Nome:** " + tag.TagName),
 			textDisplay("**Descrição:** " + tag.TagDescription),
 			textDisplay("**Valor:** " + tag.TagValue),
-			separator(true, smallSpace),
 		}
 		model = append(model, newContainer(
 			pointer(0x4c4bff), // AccentColor
