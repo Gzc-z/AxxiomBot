@@ -84,8 +84,28 @@ func SubmitNewTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	if err != nil {
 		return err
 	}
-	group := groupPagination(gtValues, 0)
-	inputs.ID = group.Tags[len(group.Tags)-1].ID + 1
+	var group *interactions.GroupTags
+	for _, group = range gtValues {
+		if group.ID != groupID {
+			fmt.Println("group not found")
+			return nil
+		}
+		if len(group.Tags) > 128 {
+			fmt.Println("out of range: muitas tags")
+			return nil
+		}
+	}
+	if group == nil {
+		fmt.Println("error: group not found")
+		s.ChannelMessageSend(i.Interaction.ChannelID, "error: nenhum gurpo encontrado;\ntente voltar para a página de grupos")
+		return nil
+	}
+
+	if len(group.Tags) == 0 {
+		inputs.ID = 0
+	} else {
+		inputs.ID = group.Tags[len(group.Tags)-1].ID + 1
+	}
 	group.Tags = append(group.Tags, inputs)
 
 	response := ui.TagSelectMenuResponse(*group, page)
@@ -222,13 +242,13 @@ func groupPagination(gtValues []*interactions.GroupTags, page int) *interactions
 				fmt.Println("out of range: muitas tags")
 				return nil
 			}
-			for i := 0; i < len(group.Tags); i += 5 {
-				end := i + 5
-				if end > len(group.Tags) {
-					end = len(group.Tags)
-				}
-				group.Tags = group.Tags[i:end]
-			}
+			// for i := 0; i < len(group.Tags); i += 5 {
+			// 	end := i + 5
+			// 	if end > len(group.Tags) {
+			// 		end = len(group.Tags)
+			// 	}
+			// 	group.Tags = group.Tags[i:end]
+			// }
 			return group
 		}
 	}
