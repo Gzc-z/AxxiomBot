@@ -18,8 +18,13 @@ type Bot struct {
 	GuildID string
 }
 
-func (cfg *config.Discord) NewBot() *Bot {
-	bot, err := discordgo.New("Bot " + cfg.Token)
+func NewBot() *Bot {
+	token, exist := os.LookupEnv("DISCORD_BOT_TOKEN")
+	if !exist {
+		log.Fatal("Error loading .env file")
+	}
+
+	bot, err := discordgo.New("Bot " + token)
 	if err != nil {
 		log.Fatal("something's wrong, can't create discord bot")
 		os.Exit(1)
@@ -27,7 +32,7 @@ func (cfg *config.Discord) NewBot() *Bot {
 
 	return &Bot{
 		Session: bot,
-		GuildID: cfg.GuildID,
+		GuildID: config.GetGuildID(),
 	}
 }
 

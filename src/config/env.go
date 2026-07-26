@@ -5,36 +5,63 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 
 	"github.com/joho/godotenv"
 )
 
-type Config struct {
-	Token   string
+var (
+	cfg  *Config
+	once sync.Once
+)
+
+type Minecraft struct {
+	IP   string
+	PORT string
+}
+type Discord struct {
 	GuildID string
 }
 
-func GetGuildID() string {
-	cfg := Load()
-	return cfg.GuildID
+type Config struct {
+	discord   Discord
+	minecraft Minecraft
 }
 
-func Load() Config {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+func load() *Config {
+	once.Do(func() {
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatal("Error loading .env file")
+		}
 
-	return Config{
-		Token:   getEnv("DISCORD_BOT_TOKEN"),
-		GuildID: getEnv("DISCORD_GUILD_ID"),
-	}
+		cfg = &Config{
+			discord: Discord{
+				GuildID: getEnv("DISCORD_GUILD_ID"),
+			},
+			minecraft: Minecraft{
+				IP:   getEnv("MINECRAFT_SERVER_IP"),
+				PORT: getEnv("MINECRAFT_SERVER_PORT"),
+			},
+		}
+	})
+	return cfg
 }
 
 func getEnv(envVar string) string {
 	key, exist := os.LookupEnv(envVar)
 	if !exist {
-		return fmt.Sprintln(envVar, "key: dt exist")
+		return fmt.Sprintf("Error: %s", envVar)
 	}
 	return key
+}
+
+func GetGuildID() string {
+	cfg := load()
+	return cfg.discord.GuildID
+}
+
+func GetMinecraft() Minecraft {
+	cfg := load()
+	return cfg.minecraft
 }

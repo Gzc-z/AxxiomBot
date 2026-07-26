@@ -7,13 +7,12 @@ import (
 	"os/signal"
 
 	bot "axiom/src"
-	"axiom/src/config"
 
 	"github.com/bwmarrin/discordgo"
 )
 
 func main() {
-	discordBot := bot.NewBot(config.GetDiscord())
+	discordBot := bot.NewBot()
 	ds := discordBot.Session
 	ds.Identify.Intents |= discordgo.IntentMessageContent
 	ds.Identify.Intents |= discordgo.IntentGuilds

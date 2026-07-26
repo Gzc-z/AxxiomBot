@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"axiom/src/config"
 	"axiom/src/interactions"
 	"axiom/src/ui"
 
@@ -94,8 +95,8 @@ func catFacts(s *discordgo.Session, m *discordgo.MessageCreate) struct {
 }
 
 func serverPing(s *discordgo.Session, m *discordgo.MessageCreate) string {
-	host := ""
-	pinger, err := ping.NewPinger(host)
+	host := config.GetMinecraft()
+	pinger, err := ping.NewPinger(host.IP)
 	if err != nil {
 		fmt.Println(err)
 		s.ChannelMessageSendReply(m.ChannelID, "error: couldn't connect to server\ncheck server's ip", m.Reference())
