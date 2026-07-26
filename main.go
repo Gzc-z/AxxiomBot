@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	discordBot := bot.NewBot(config.Load())
+	discordBot := bot.NewBot(config.GetDiscord())
 	ds := discordBot.Session
 	ds.Identify.Intents |= discordgo.IntentMessageContent
 	ds.Identify.Intents |= discordgo.IntentGuilds

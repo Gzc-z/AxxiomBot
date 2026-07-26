@@ -18,7 +18,7 @@ type Bot struct {
 	GuildID string
 }
 
-func NewBot(cfg config.Config) *Bot {
+func (cfg *config.Discord) NewBot() *Bot {
 	bot, err := discordgo.New("Bot " + cfg.Token)
 	if err != nil {
 		log.Fatal("something's wrong, can't create discord bot")
@@ -31,7 +31,7 @@ func NewBot(cfg config.Config) *Bot {
 	}
 }
 
-func (bot *Bot) SessionEvents() {
+func (bot Bot) SessionEvents() {
 	ds := bot.Session
 	handlers := []any{
 		handlers.MessageCreate,

@@ -68,24 +68,3 @@ func InteractionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 }
-
-var txtCmds = []string{
-	"time",
-	"ping",
-	"test",
-	"help",
-	"users",
-}
-
-type mesageCreateBasis struct {
-	s *discordgo.Session
-	m *discordgo.MessageCreate
-}
-
-func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if m.Author.ID == s.State.User.ID {
-		return
-	}
-	// base := mesageCreateBasis{s, m}
-	// dispatchCommand(base)
-}
