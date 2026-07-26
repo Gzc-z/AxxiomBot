@@ -21,6 +21,7 @@ type Minecraft struct {
 }
 type Discord struct {
 	GuildID string
+	AppID   string
 }
 
 type Config struct {
@@ -38,6 +39,7 @@ func load() *Config {
 		cfg = &Config{
 			discord: Discord{
 				GuildID: getEnv("DISCORD_GUILD_ID"),
+				AppID:   getEnv("APPLICATION_ID"),
 			},
 			minecraft: Minecraft{
 				IP:   getEnv("MINECRAFT_SERVER_IP"),
@@ -64,4 +66,9 @@ func GetGuildID() string {
 func GetMinecraft() Minecraft {
 	cfg := load()
 	return cfg.minecraft
+}
+
+func GetAppID() string {
+	cfg := load()
+	return cfg.discord.AppID
 }

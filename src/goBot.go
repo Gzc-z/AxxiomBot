@@ -11,28 +11,67 @@ import (
 	"axiom/src/interactions"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/joho/godotenv"
 )
 
 type Bot struct {
 	Session *discordgo.Session
 	GuildID string
+	AppID   string
 }
 
 func NewBot() *Bot {
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	token, exist := os.LookupEnv("DISCORD_BOT_TOKEN")
 	if !exist {
 		log.Fatal("Error loading .env file")
 	}
 
-	bot, err := discordgo.New("Bot " + token)
+	sess, err := discordgo.New("Bot " + token)
 	if err != nil {
 		log.Fatal("something's wrong, can't create discord bot")
 		os.Exit(1)
 	}
 
 	return &Bot{
-		Session: bot,
+		Session: sess,
 		GuildID: config.GetGuildID(),
+		AppID:   config.GetAppID(),
+	}
+}
+
+func (bot *Bot) Start() {
+	ds := bot.Session
+	ds.Identify.Intents |= discordgo.IntentMessageContent
+	ds.Identify.Intents |= discordgo.IntentGuilds
+	ds.Identify.Intents |= discordgo.IntentGuildMembers
+
+	bot.SessionEvents()
+
+	if err := ds.Open(); err != nil {
+		panic(err)
+	}
+	defer ds.Close()
+}
+
+func (bot *Bot) Close() {
+	ds := bot.Session
+
+	cmds, err := ds.ApplicationCommands(bot.AppID, bot.GuildID)
+	if err != nil {
+		log.Println(err)
+	}
+	if len(cmds) != 0 {
+		for _, v := range cmds {
+			err := ds.ApplicationCommandDelete(bot.AppID, bot.GuildID, v.ID)
+			if err != nil {
+				fmt.Println(err)
+			}
+			fmt.Printf("\ncommand /%s deleted", v.Name)
+		}
 	}
 }
 
