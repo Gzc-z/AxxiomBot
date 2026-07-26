@@ -4,4 +4,4 @@ infos
 bin
 .env
 
-bot/interactions/data/groupTags.json
+src/data/groupTags.json

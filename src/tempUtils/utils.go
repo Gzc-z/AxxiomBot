@@ -7,20 +7,20 @@ import (
 	"os"
 	"strconv"
 
-	"axiom/bot/interactions/models"
+	"axiom/src/interactions"
 
 	"github.com/bwmarrin/discordgo"
 )
 
 var (
-	dirResp string = "bot/interactions/ui/"
-	dirData string = "bot/interactions/data/"
+	dirResp string = "src/ui/"
+	dirData string = "src/data/"
 	file    string
 	err     error
 )
 
 type modelInterface interface {
-	models.GroupTags | models.Tag | models.InternalUniqueValue
+	interactions.GroupTags | interactions.Tag | interactions.InternalUniqueValue
 }
 
 func GetInputs[model modelInterface](data discordgo.ModalSubmitInteractionData) (*model, error) {

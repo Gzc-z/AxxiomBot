@@ -3,7 +3,7 @@ package ui
 import (
 	"fmt"
 
-	"axiom/bot/interactions/models"
+	"axiom/src/interactions"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -103,7 +103,7 @@ func GroupsTagResponse() *discordgo.InteractionResponse {
 	}
 }
 
-func TagSelectMenuResponse(group models.GroupTags, page uint8) *discordgo.InteractionResponse {
+func TagSelectMenuResponse(group interactions.GroupTags, page uint8) *discordgo.InteractionResponse {
 	var components []discordgo.MessageComponent
 	components = append(components, newContainer(
 		pointer(0x4c4bff), // AccentColor
@@ -262,7 +262,7 @@ func DelModalTag() *discordgo.InteractionResponse {
 
 // TODO: do polymorphism
 // 'see-more Tags' whether lenght about above a set number
-func displayListModel(tags []*models.Tag, page uint8) []discordgo.MessageComponent {
+func displayListModel(tags []*interactions.Tag, page uint8) []discordgo.MessageComponent {
 	var model []discordgo.MessageComponent
 	var values []discordgo.MessageComponent
 	for _, tag := range tags {
@@ -278,7 +278,14 @@ func displayListModel(tags []*models.Tag, page uint8) []discordgo.MessageCompone
 		))
 	}
 
-	return model[0:5]
+	if model == nil {
+		return nil
+	}
+	if len(model) > 5 {
+		model = model[0:5]
+	}
+	return model
+	// return model[0:5]
 }
 
 func separator(b bool, space discordgo.SeparatorSpacingSize) discordgo.Separator {

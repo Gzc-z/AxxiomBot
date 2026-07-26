@@ -6,8 +6,9 @@ import (
 	"log"
 	"os"
 
-	"axiom/bot/config"
-	"axiom/bot/handlers"
+	"axiom/src/config"
+	"axiom/src/handlers"
+	"axiom/src/interactions"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -43,7 +44,7 @@ func (bot *Bot) SessionEvents() {
 }
 
 func (bot Bot) applicationCommandCreate(s *discordgo.Session, r *discordgo.Ready) {
-	for _, v := range handlers.Commands {
+	for _, v := range interactions.Commands {
 		_, err := s.ApplicationCommandCreate(s.State.User.ID, bot.GuildID, v)
 		if err != nil {
 			log.Panicf("Cannot create '%v' command: %v", v.Name, err)

@@ -1,5 +1,5 @@
-// Package models its the principal data struct package to interactions, for now
-package models
+// Package interactions its the principal data struct package to interactions, for now
+package interactions
 
 import (
 	"github.com/bwmarrin/snowflake"

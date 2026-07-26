@@ -6,8 +6,8 @@ import (
 	"os"
 	"os/signal"
 
-	"axiom/bot"
-	"axiom/bot/config"
+	bot "axiom/src"
+	"axiom/src/config"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -16,6 +16,9 @@ func main() {
 	discordBot := bot.NewBot(config.Load())
 	ds := discordBot.Session
 	ds.Identify.Intents |= discordgo.IntentMessageContent
+	ds.Identify.Intents |= discordgo.IntentGuilds
+	ds.Identify.Intents |= discordgo.IntentGuildMembers
+
 	discordBot.SessionEvents()
 
 	if err := ds.Open(); err != nil {

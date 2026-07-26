@@ -1,21 +1,21 @@
-package interactions
+package grouptags
 
 import (
 	"encoding/json"
 	"fmt"
 	"os"
 
-	"axiom/bot/interactions/models"
-	"axiom/bot/interactions/ui"
-	temputils "axiom/bot/tempUtils"
+	"axiom/src/interactions"
+	temputils "axiom/src/tempUtils"
+	"axiom/src/ui"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/bwmarrin/snowflake"
 )
 
 var (
-	dirResp  string = "bot/interactions/ui/"
-	dirData  string = "bot/interactions/data/"
+	dirResp  string = "src/ui/"
+	dirData  string = "src/data/"
 	file     string
 	response *discordgo.InteractionResponse
 
@@ -73,14 +73,14 @@ func SubmitNewTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	gtCAP := 40
 	file = dirData + "groupTags.json"
 
-	gtValues := make([]*models.GroupTags, 0, gtCAP)
+	gtValues := make([]*interactions.GroupTags, 0, gtCAP)
 	err := json.Unmarshal(temputils.OpenGroupTag(), &gtValues)
 	if err != nil || len(gtValues) >= gtCAP {
 		return err
 	}
 	data := i.ModalSubmitData()
 
-	inputs, err := temputils.GetInputs[models.Tag](data)
+	inputs, err := temputils.GetInputs[interactions.Tag](data)
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func SubmitNewTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 }
 
 func SubmitDelTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
-	var gtValues []*models.GroupTags
+	var gtValues []*interactions.GroupTags
 	data := i.ModalSubmitData()
 	file = dirData + "groupTags.json"
 
@@ -110,7 +110,7 @@ func SubmitDelTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	if err != nil {
 		return err
 	}
-	input, err := temputils.GetInputs[models.InternalUniqueValue](data)
+	input, err := temputils.GetInputs[interactions.InternalUniqueValue](data)
 	if err != nil {
 		return err
 	}
@@ -142,7 +142,7 @@ func SubmitNewGrouptag(s *discordgo.Session, i *discordgo.InteractionCreate) err
 	file = dirData + "groupTags.json"
 	// groupTag defn and limit
 	gtCAP := 40
-	groupTags := make([]models.GroupTags, 0, gtCAP)
+	groupTags := make([]interactions.GroupTags, 0, gtCAP)
 
 	err := json.Unmarshal(temputils.OpenGroupTag(), &groupTags)
 	if err != nil || len(groupTags) >= gtCAP {
@@ -150,7 +150,7 @@ func SubmitNewGrouptag(s *discordgo.Session, i *discordgo.InteractionCreate) err
 	}
 
 	data := i.ModalSubmitData()
-	inputs, err := temputils.GetInputs[models.GroupTags](data)
+	inputs, err := temputils.GetInputs[interactions.GroupTags](data)
 	if err != nil {
 		return err
 	}
@@ -170,7 +170,7 @@ func SubmitNewGrouptag(s *discordgo.Session, i *discordgo.InteractionCreate) err
 }
 
 func DelGroupTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
-	var gtValues []*models.GroupTags
+	var gtValues []*interactions.GroupTags
 	file = dirData + "groupTags.json"
 
 	err := json.Unmarshal(temputils.OpenGroupTag(), &gtValues)
@@ -215,7 +215,7 @@ func DecrementPage(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 }
 
 // TODO: pagination 2 bellow
-func groupPagination(gtValues []*models.GroupTags, page int) *models.GroupTags {
+func groupPagination(gtValues []*interactions.GroupTags, page int) *interactions.GroupTags {
 	for _, group := range gtValues {
 		if group.ID == groupID {
 			if len(group.Tags) > 128 {
@@ -240,7 +240,7 @@ func selectGroupTag(data discordgo.MessageComponentInteractionData) *discordgo.I
 		fmt.Println("no data found; returning nil")
 		return nil
 	}
-	var groupTags []*models.GroupTags
+	var groupTags []*interactions.GroupTags
 
 	json.Unmarshal(temputils.OpenGroupTag(), &groupTags)
 
@@ -256,7 +256,7 @@ func selectGroupTag(data discordgo.MessageComponentInteractionData) *discordgo.I
 
 // this one append groupTags from the groupTags.json file to ptsResponse.Components index 0
 func groupTagsUpdate(slice discordgo.InteractionResponse) *discordgo.InteractionResponse {
-	var groupTags []models.GroupTags
+	var groupTags []interactions.GroupTags
 
 	json.Unmarshal(temputils.OpenGroupTag(), &groupTags)
 	if len(groupTags) != 0 {
@@ -266,7 +266,7 @@ func groupTagsUpdate(slice discordgo.InteractionResponse) *discordgo.Interaction
 	return &slice
 }
 
-func groupTagSelectMenu(groups []models.GroupTags) discordgo.ActionsRow {
+func groupTagSelectMenu(groups []interactions.GroupTags) discordgo.ActionsRow {
 	var opts []discordgo.SelectMenuOption
 	for _, opt := range groups {
 		opts = append([]discordgo.SelectMenuOption{

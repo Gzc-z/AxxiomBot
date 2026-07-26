@@ -3,7 +3,7 @@ package handlers
 import (
 	"fmt"
 
-	"axiom/bot/interactions"
+	"axiom/src/interactions/grouptags"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -13,23 +13,23 @@ type funcICHandler func(*discordgo.Session, *discordgo.InteractionCreate) error
 var (
 	// for on strings assigning to a func type
 	commandInteractions = map[string]funcICHandler{
-		"pts": interactions.PtsCommandResponse,
+		"pts": grouptags.PtsCommandResponse,
 	}
 	messageComponentInteractions = map[string]funcICHandler{
-		"selectGroupTag": interactions.PtsGroupTagResponse,
-		"newGroupTag":    interactions.PtsGroupTagResponse,
-		"delGroupTag":    interactions.PtsGroupTagResponse,
-		"createTag":      interactions.PtsGroupTagResponse,
-		"delTag":         interactions.PtsGroupTagResponse,
-		"ptsReturn":      interactions.PtsCommandResponse,
-		"leftPage":       interactions.IncrementPage,
-		"rightPage":      interactions.DecrementPage,
+		"selectGroupTag": grouptags.PtsGroupTagResponse,
+		"newGroupTag":    grouptags.PtsGroupTagResponse,
+		"delGroupTag":    grouptags.PtsGroupTagResponse,
+		"createTag":      grouptags.PtsGroupTagResponse,
+		"delTag":         grouptags.PtsGroupTagResponse,
+		"ptsReturn":      grouptags.PtsCommandResponse,
+		"leftPage":       grouptags.IncrementPage,
+		"rightPage":      grouptags.DecrementPage,
 	}
 	submitModalInteractions = map[string]funcICHandler{
-		"submitNewGroupTag": interactions.SubmitNewGrouptag,
-		"submitDelGroupTag": interactions.DelGroupTag,
-		"submitNewTag":      interactions.SubmitNewTag,
-		"submitDelTag":      interactions.SubmitDelTag,
+		"submitNewGroupTag": grouptags.SubmitNewGrouptag,
+		"submitDelGroupTag": grouptags.DelGroupTag,
+		"submitNewTag":      grouptags.SubmitNewTag,
+		"submitDelTag":      grouptags.SubmitDelTag,
 	}
 )
 
@@ -69,11 +69,23 @@ func InteractionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 }
 
+var txtCmds = []string{
+	"time",
+	"ping",
+	"test",
+	"help",
+	"users",
+}
+
+type mesageCreateBasis struct {
+	s *discordgo.Session
+	m *discordgo.MessageCreate
+}
+
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
-	if m.Content == "hello" {
-		s.ChannelMessageSendReply(m.ChannelID, "world!", m.Reference())
-	}
+	// base := mesageCreateBasis{s, m}
+	// dispatchCommand(base)
 }
