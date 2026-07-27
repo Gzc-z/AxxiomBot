@@ -5,6 +5,7 @@ go 1.26.1
 require (
 	github.com/bwmarrin/discordgo v0.29.0
 	github.com/bwmarrin/snowflake v0.3.0
+	github.com/expr-lang/expr v1.17.8
 	github.com/joho/godotenv v1.5.1
 	github.com/prometheus-community/pro-bing v0.9.1
 )

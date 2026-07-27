@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 
 	"axiom/src/config"
 	"axiom/src/handlers"
@@ -55,6 +56,13 @@ func (bot *Bot) Start() {
 		panic(err)
 	}
 	defer ds.Close()
+
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt)
+
+	userBot, _ := ds.User("@me")
+	log.Printf("Logged in as: %v#%v", userBot.Username, userBot.Discriminator)
+	<-sig
 }
 
 func (bot *Bot) Close() {

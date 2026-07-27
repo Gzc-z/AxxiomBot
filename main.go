@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 	"os/signal"
 
@@ -10,13 +9,11 @@ import (
 
 func main() {
 	discordBot := bot.NewBot()
-	defer discordBot.Close()
 
+	defer discordBot.Close()
 	go discordBot.Start()
 
-	ds := discordBot.Session
-	log.Printf("Logged in as: %v#%v", ds.State.User.Username, ds.State.User.Discriminator)
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt)
-	<-stop
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt)
+	<-sig
 }

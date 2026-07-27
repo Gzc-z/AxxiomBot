@@ -25,8 +25,8 @@ type Discord struct {
 }
 
 type Config struct {
-	discord   Discord
-	minecraft Minecraft
+	Discord   Discord
+	Minecraft Minecraft
 }
 
 func load() *Config {
@@ -37,13 +37,13 @@ func load() *Config {
 		}
 
 		cfg = &Config{
-			discord: Discord{
+			Discord: Discord{
 				GuildID: getEnv("DISCORD_GUILD_ID"),
 				AppID:   getEnv("APPLICATION_ID"),
 			},
-			minecraft: Minecraft{
-				IP:   getEnv("MINECRAFT_SERVER_IP"),
+			Minecraft: Minecraft{
 				PORT: getEnv("MINECRAFT_SERVER_PORT"),
+				IP:   getEnv("MINECRAFT_SERVER_IP"),
 			},
 		}
 	})
@@ -60,15 +60,15 @@ func getEnv(envVar string) string {
 
 func GetGuildID() string {
 	cfg := load()
-	return cfg.discord.GuildID
+	return cfg.Discord.GuildID
 }
 
 func GetMinecraft() Minecraft {
 	cfg := load()
-	return cfg.minecraft
+	return cfg.Minecraft
 }
 
 func GetAppID() string {
 	cfg := load()
-	return cfg.discord.AppID
+	return cfg.Discord.AppID
 }
