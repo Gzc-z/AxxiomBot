@@ -1,11 +1,24 @@
-# Bot
+# AxxiomBot
 
-# o que é
-
-É majoritariamente um discord bot, projetado para facilitar processos, tarefas e problemas comuns.  
+Um bot administrativo para o Discord, projetado para facilitar processos, tarefas e problemas comuns.  
 futuramente pretendo ligar esse bot a outros contextos, se estendendo com outros projetos.  
 
-o principal uso atualmente está sendo de criação de grupos de pontuações
+funcionalidades atuais:
+* criar um grupo de pontuações (tags)
+* listagem de perfil de usuários
+* pegar fatos de catfact (https://catfact.ninja)
+* pegar tempo de resposta de um servidor
+* calculadora básica
+
+implementações futuras:
+
+| impl           | status          |
+|--------------- | --------------- |
+| Item1.2        | Pending         |
+| Item1.3        | Pending         |
+| clima        | clima           |
+| minigames      | coming soon     |
+
 
 # configuração
 
@@ -31,8 +44,8 @@ eu sinceramente não sei que nome dar a esse bot
 # checklist
 
 * [x] escalar o bot para diferentes tags com diferentes propositos
+* [x] atualizar README e documentações
 * [ ] refatorar o código
-* [ ] atualizar README e documentações
 * [ ] colocar mais coisas na checklist
 * [ ] escolher um bom nome
 * [ ] fazer o bot multilinguagem
