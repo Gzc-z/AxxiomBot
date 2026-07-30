@@ -1,7 +1,11 @@
+# workspace
 info
 infos
+*.sh
 
+# Go
 bin
 .env
 
+# data
 src/data/groupTags.json

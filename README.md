@@ -12,13 +12,12 @@ funcionalidades atuais:
 
 implementações futuras:
 
-| impl           | status          |
-|--------------- | --------------- |
-| Item1.2        | Pending         |
-| Item1.3        | Pending         |
-| clima        | clima           |
-| minigames      | coming soon     |
-
+- minigames
+- meme aleatório
+- jogo da vida (de alguma forma)
+- 1 musica aleatória por dia
+- jogo de palavras
+- rank de algo com enquete
 
 # configuração
 
@@ -37,15 +36,14 @@ criar novo aplicativo:
 [![criar nova aplicação](./docs/New_app.png)](https://discord.com/developers/applications#:~:text=a)
 ![redefinir e copiar token](./docs/token.png)
 
-# nome
-
-eu sinceramente não sei que nome dar a esse bot
+# nome e contexto
 
 # checklist
 
 * [x] escalar o bot para diferentes tags com diferentes propositos
 * [x] atualizar README e documentações
-* [ ] refatorar o código
-* [ ] colocar mais coisas na checklist
-* [ ] escolher um bom nome
-* [ ] fazer o bot multilinguagem
+* [x] colocar mais coisas na checklist
+* [x] escolher um bom nome
+* [ ] colocar mais coisas nas implementações futuras
+* [ ] refatorar o código gambiarrento
+* [ ] fazer o bot para outros idiomas

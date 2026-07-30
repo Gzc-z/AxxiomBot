@@ -1,3 +1,4 @@
+SCRIPT = ./script.sh
 RUN = go run main.go $(filter-out $@,$(MAKECMDGOALS))
 
 run:
@@ -6,5 +7,10 @@ run:
 run_wit_err:
 	@$(run)
 
+s:
+	@$(SCRIPT)
+
+
 %:
 	@:
+
