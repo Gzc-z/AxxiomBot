@@ -27,9 +27,10 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	args := strings.Fields(strings.TrimPrefix(m.Content, "."))
-	var help []string = []string{
-		"time",
+	help := [10]string{
 		"ping",
+		"help",
+		"time",
 		"comandos",
 		"users",
 		"fact",
@@ -37,7 +38,6 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		"me",
 		"mine",
 		"calc",
-		"math",
 		// "expr",
 	}
 	if len(args) == 0 {
@@ -46,14 +46,14 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	}
 	switch args[0] {
+	case "ping":
+		s.ChannelMessageSendReply(m.ChannelID, "pong", m.Reference())
 	case "help":
 		s.ChannelMessageSendReply(m.ChannelID, "## comandos de texto disponíveis: ", m.Reference())
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s", help))
 	case "time":
 		time := time.Now().Format("15h : 04m : 05s")
 		s.ChannelMessageSendReply(m.ChannelID, time, m.Reference())
-	case "ping":
-		s.ChannelMessageSendReply(m.ChannelID, "pong", m.Reference())
 	case "comandos", "commands":
 		s.ChannelMessageSendReply(m.ChannelID, "## commands available: ", m.Reference())
 		for _, v := range interactions.Commands {
@@ -126,7 +126,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if len(args) >= 2 {
 			for _, v := range args[1:] {
 				if strings.Contains(v, "x") || strings.Contains(v, "X") {
-					s.ChannelMessageSendReply(m.ChannelID, "use * instead of x", m.Reference())
+					s.ChannelMessageSendReply(m.ChannelID, "use * ao invés de x; seu boboca", m.Reference())
 					return
 				}
 			}

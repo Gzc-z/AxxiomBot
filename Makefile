@@ -7,7 +7,7 @@ run:
 run_wit_err:
 	@$(run)
 
-s:
+r:
 	@$(SCRIPT)
 
 
