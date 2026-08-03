@@ -38,12 +38,14 @@ criar novo aplicativo:
 
 # nome e contexto
 
-# checklist
+# checklist atual
 
 * [x] escalar o bot para diferentes tags com diferentes propositos
 * [x] atualizar README e documentações
 * [x] colocar mais coisas na checklist
 * [x] escolher um bom nome
-* [ ] colocar mais coisas nas implementações futuras
+* [x] colocar mais coisas nas implementações futuras
 * [ ] refatorar o código gambiarrento
 * [ ] fazer o bot para outros idiomas
+
+não olhe o código, não faça isso com sua vida
