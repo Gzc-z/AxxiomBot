@@ -20,10 +20,9 @@ var (
 	response *discordgo.InteractionResponse
 
 	groupID snowflake.ID
-	page    uint8
+	page    uint8 = 1
 )
 
-// precisa de permanência temporária
 func PtsCommandResponse(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	ptsResponse := ui.PtsResponse()
 	response := groupTagsUpdate(*ptsResponse)
@@ -35,12 +34,16 @@ func PtsCommandResponse(s *discordgo.Session, i *discordgo.InteractionCreate) er
 	return nil
 }
 
-func PtsGroupTagResponse(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+func PtsGroupTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	var err error
 	var customID string
 
 	data := i.MessageComponentData()
 	if data.CustomID == "groupOptions" {
+		if len(data.Values) == 0 {
+			fmt.Println("no data found; returning nil")
+			return nil
+		}
 		customID = data.Values[0]
 	} else {
 		customID = data.CustomID
@@ -58,6 +61,12 @@ func PtsGroupTagResponse(s *discordgo.Session, i *discordgo.InteractionCreate) e
 		response = ui.ModalTag()
 	case "delTag":
 		response = ui.DelModalTag()
+	case "rightPage":
+		IncrementPage()
+		response = selectGroupTag(data)
+	case "leftPage":
+		DecrementPage()
+		response = selectGroupTag(data)
 	}
 	if response == nil {
 		return nil
@@ -73,8 +82,11 @@ func SubmitNewTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	gtCAP := 40
 	file = dirData + "groupTags.json"
 
+	// this's a quick and dirty temporary fix
 	gtValues := make([]*interactions.GroupTags, 0, gtCAP)
-	err := json.Unmarshal(temputils.OpenGroupTag(), &gtValues)
+
+	bytes, _ := json.Marshal(temputils.OpenGroupTag())
+	err := json.Unmarshal(bytes, &gtValues)
 	if err != nil || len(gtValues) >= gtCAP {
 		return err
 	}
@@ -86,17 +98,17 @@ func SubmitNewTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	}
 	var group *interactions.GroupTags
 	for _, group = range gtValues {
-		if group.ID != groupID {
-			fmt.Println("group not found")
-			return nil
-		}
-		if len(group.Tags) > 128 {
-			fmt.Println("out of range: muitas tags")
-			return nil
+		if group.ID == groupID {
+			fmt.Println("group found")
+			break
 		}
 	}
+	if len(group.Tags) > 128 {
+		fmt.Println("out of range: muitas tags")
+		return nil
+	}
 	if group == nil {
-		fmt.Println("error: group not found")
+		fmt.Println("error: without group")
 		s.ChannelMessageSend(i.Interaction.ChannelID, "error: nenhum gurpo encontrado;\ntente voltar para a página de grupos")
 		return nil
 	}
@@ -122,14 +134,10 @@ func SubmitNewTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 }
 
 func SubmitDelTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
-	var gtValues []*interactions.GroupTags
 	data := i.ModalSubmitData()
 	file = dirData + "groupTags.json"
 
-	err := json.Unmarshal(temputils.OpenGroupTag(), &gtValues)
-	if err != nil {
-		return err
-	}
+	gtValues := temputils.OpenGroupTag()
 	input, err := temputils.GetInputs[interactions.InternalUniqueValue](data)
 	if err != nil {
 		return err
@@ -160,11 +168,12 @@ func SubmitDelTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 
 func SubmitNewGrouptag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	file = dirData + "groupTags.json"
-	// groupTag defn and limit
 	gtCAP := 40
-	groupTags := make([]interactions.GroupTags, 0, gtCAP)
 
-	err := json.Unmarshal(temputils.OpenGroupTag(), &groupTags)
+	groupTags := make([]interactions.GroupTags, 0, gtCAP)
+	// this's a quick and dirty temporary fix
+	bytes, _ := json.Marshal(temputils.OpenGroupTag())
+	err := json.Unmarshal(bytes, &groupTags)
 	if err != nil || len(groupTags) >= gtCAP {
 		return err
 	}
@@ -190,13 +199,9 @@ func SubmitNewGrouptag(s *discordgo.Session, i *discordgo.InteractionCreate) err
 }
 
 func DelGroupTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
-	var gtValues []*interactions.GroupTags
 	file = dirData + "groupTags.json"
 
-	err := json.Unmarshal(temputils.OpenGroupTag(), &gtValues)
-	if err != nil {
-		return err
-	}
+	gtValues := temputils.OpenGroupTag()
 	for idx, group := range gtValues {
 		if group.ID == groupID {
 			gtValues = append(gtValues[:idx], gtValues[idx+1:]...)
@@ -207,66 +212,64 @@ func DelGroupTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 			response = groupTagsUpdate(*ptsResponse)
 		}
 	}
-	err = s.InteractionRespond(i.Interaction, response)
+	err := s.InteractionRespond(i.Interaction, response)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func IncrementPage(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+func IncrementPage() error {
 	if page > 10 {
+		fmt.Println("out of range: page")
 		return nil
 	}
 	page += 1
-	data := i.MessageComponentData()
-	selectGroupTag(data)
 	return nil
 }
 
-func DecrementPage(s *discordgo.Session, i *discordgo.InteractionCreate) error {
+func DecrementPage() error {
 	if page < 1 {
+		fmt.Println("out of range: page")
 		return nil
 	}
 	page -= 1
-	data := i.MessageComponentData()
-	selectGroupTag(data)
 	return nil
 }
 
-// TODO: pagination 2 bellow
-func groupPagination(gtValues []*interactions.GroupTags, page int) *interactions.GroupTags {
-	for _, group := range gtValues {
-		if group.ID == groupID {
-			if len(group.Tags) > 128 {
-				fmt.Println("out of range: muitas tags")
-				return nil
-			}
-			// for i := 0; i < len(group.Tags); i += 5 {
-			// 	end := i + 5
-			// 	if end > len(group.Tags) {
-			// 		end = len(group.Tags)
-			// 	}
-			// 	group.Tags = group.Tags[i:end]
-			// }
-			return group
-		}
-	}
-	return nil
-}
+// func groupPagination(gtValues []*interactions.GroupTags, page int) *interactions.GroupTags {
+// 	for _, group := range gtValues {
+// 		if group.ID == groupID {
+// 			if len(group.Tags) > 128 {
+// 				fmt.Println("out of range: muitas tags")
+// 				return nil
+// 			}
+// 			// for i := 0; i < len(group.Tags); i += 5 {
+// 			// 	end := i + 5
+// 			// 	if end > len(group.Tags) {
+// 			// 		end = len(group.Tags)
+// 			// 	}
+// 			// 	group.Tags = group.Tags[i:end]
+// 			// }
+// 			return group
+// 		}
+// 	}
+// 	return nil
+// }
 
 func selectGroupTag(data discordgo.MessageComponentInteractionData) *discordgo.InteractionResponse {
-	if len(data.Values) == 0 {
-		fmt.Println("no data found; returning nil")
-		return nil
+	groupTags := temputils.OpenGroupTag()
+
+	if groupID != 0 {
+		for _, group := range groupTags {
+			if group.ID == groupID {
+				response = ui.TagSelectMenuResponse(*group, page)
+				return response
+			}
+		}
 	}
-	var groupTags []*interactions.GroupTags
-
-	json.Unmarshal(temputils.OpenGroupTag(), &groupTags)
-
 	for _, group := range groupTags {
 		if group.ID.String() == data.Values[0] { // selectMenu Options
-			// group := groupPagination(groupTags, 0)
 			response = ui.TagSelectMenuResponse(*group, page)
 			groupID = group.ID
 		}
@@ -276,9 +279,7 @@ func selectGroupTag(data discordgo.MessageComponentInteractionData) *discordgo.I
 
 // this one append groupTags from the groupTags.json file to ptsResponse.Components index 0
 func groupTagsUpdate(slice discordgo.InteractionResponse) *discordgo.InteractionResponse {
-	var groupTags []interactions.GroupTags
-
-	json.Unmarshal(temputils.OpenGroupTag(), &groupTags)
+	groupTags := temputils.OpenGroupTag()
 	if len(groupTags) != 0 {
 		gtSelectMenu := []discordgo.MessageComponent{groupTagSelectMenu(groupTags)}
 		slice.Data.Components = append(gtSelectMenu, slice.Data.Components...)
@@ -286,7 +287,7 @@ func groupTagsUpdate(slice discordgo.InteractionResponse) *discordgo.Interaction
 	return &slice
 }
 
-func groupTagSelectMenu(groups []interactions.GroupTags) discordgo.ActionsRow {
+func groupTagSelectMenu(groups []*interactions.GroupTags) discordgo.ActionsRow {
 	var opts []discordgo.SelectMenuOption
 	for _, opt := range groups {
 		opts = append([]discordgo.SelectMenuOption{

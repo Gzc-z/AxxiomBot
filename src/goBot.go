@@ -65,7 +65,7 @@ func (bot *Bot) Start() {
 	<-sig
 }
 
-func (bot *Bot) Close() {
+func (bot *Bot) Close() error {
 	ds := bot.Session
 
 	cmds, err := ds.ApplicationCommands(bot.AppID, bot.GuildID)
@@ -76,11 +76,12 @@ func (bot *Bot) Close() {
 		for _, v := range cmds {
 			err := ds.ApplicationCommandDelete(bot.AppID, bot.GuildID, v.ID)
 			if err != nil {
-				fmt.Println(err)
+				return err
 			}
 			fmt.Printf("\ncommand /%s deleted", v.Name)
 		}
 	}
+	return nil
 }
 
 func (bot Bot) SessionEvents() {

@@ -51,7 +51,7 @@ func GetInputs[model modelInterface](data discordgo.ModalSubmitInteractionData) 
 	return &values, nil
 }
 
-func OpenGroupTag() []byte {
+func OpenGroupTag() []*interactions.GroupTags {
 	file = dirData + "groupTags.json"
 	if _, err := os.Stat(file); os.IsNotExist(err) {
 		os.Mkdir(dirData, 0o755)
@@ -68,5 +68,8 @@ func OpenGroupTag() []byte {
 		fmt.Println("add '[]' at the end of json")
 		groupsContent, _ = os.ReadFile(file) // bad error handler
 	}
-	return groupsContent
+	var groupTags []*interactions.GroupTags
+
+	json.Unmarshal(groupsContent, &groupTags)
+	return groupTags
 }

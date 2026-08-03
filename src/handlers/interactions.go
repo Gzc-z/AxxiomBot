@@ -16,14 +16,14 @@ var (
 		"pts": grouptags.PtsCommandResponse,
 	}
 	messageComponentInteractions = map[string]funcICHandler{
-		"selectGroupTag": grouptags.PtsGroupTagResponse,
-		"newGroupTag":    grouptags.PtsGroupTagResponse,
-		"delGroupTag":    grouptags.PtsGroupTagResponse,
-		"createTag":      grouptags.PtsGroupTagResponse,
-		"delTag":         grouptags.PtsGroupTagResponse,
 		"ptsReturn":      grouptags.PtsCommandResponse,
-		"leftPage":       grouptags.IncrementPage,
-		"rightPage":      grouptags.DecrementPage,
+		"selectGroupTag": grouptags.PtsGroupTag,
+		"newGroupTag":    grouptags.PtsGroupTag,
+		"delGroupTag":    grouptags.PtsGroupTag,
+		"createTag":      grouptags.PtsGroupTag,
+		"delTag":         grouptags.PtsGroupTag,
+		"rightPage":      grouptags.PtsGroupTag,
+		"leftPage":       grouptags.PtsGroupTag,
 	}
 	submitModalInteractions = map[string]funcICHandler{
 		"submitNewGroupTag": grouptags.SubmitNewGrouptag,

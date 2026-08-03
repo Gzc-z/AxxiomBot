@@ -263,6 +263,11 @@ func DelModalTag() *discordgo.InteractionResponse {
 // TODO: do polymorphism
 // 'see-more Tags' whether lenght about above a set number
 func displayListModel(tags []*interactions.Tag, page uint8) []discordgo.MessageComponent {
+	if tags == nil {
+		fmt.Println("nenhuma tag encontrada")
+		return nil
+	}
+
 	var model []discordgo.MessageComponent
 	var values []discordgo.MessageComponent
 	for _, tag := range tags {
@@ -278,14 +283,13 @@ func displayListModel(tags []*interactions.Tag, page uint8) []discordgo.MessageC
 		))
 	}
 
-	if model == nil {
-		return nil
+	if len(model) < 5 {
+		return model[0:]
 	}
-	if len(model) > 5 {
-		model = model[0:5]
+	if page > 1 {
+		return model[1*page-1 : 1*page]
 	}
-	return model
-	// return model[0:5]
+	return model[0:1]
 }
 
 func separator(b bool, space discordgo.SeparatorSpacingSize) discordgo.Separator {
