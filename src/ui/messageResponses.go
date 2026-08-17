@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"math/rand"
 
 	"github.com/bwmarrin/discordgo"
@@ -10,7 +11,6 @@ func randomColor() int {
 	return rand.Intn(0xffffff)
 }
 
-// separar arquivos dps
 func MembersResponse(v *discordgo.Member) *discordgo.MessageSend {
 	return &discordgo.MessageSend{
 		Content: "",
@@ -61,5 +61,15 @@ func UserResponse(v *discordgo.User) *discordgo.MessageSend {
 				},
 			},
 		},
+	}
+}
+
+func CommandsResponse(v *discordgo.ApplicationCommand) *discordgo.MessageSend {
+	return &discordgo.MessageSend{
+		Content: fmt.Sprintf("Nome: %s\nDescrição: %s\n%v",
+			v.Name,
+			v.Description,
+			v.Version,
+		),
 	}
 }

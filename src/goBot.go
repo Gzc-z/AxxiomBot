@@ -4,6 +4,7 @@ package bot
 import (
 	"fmt"
 	"log"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 
@@ -49,7 +50,6 @@ func (bot *Bot) Start() {
 	ds.Identify.Intents |= discordgo.IntentMessageContent
 	ds.Identify.Intents |= discordgo.IntentGuilds
 	ds.Identify.Intents |= discordgo.IntentGuildMembers
-
 	bot.SessionEvents()
 
 	if err := ds.Open(); err != nil {
@@ -57,11 +57,13 @@ func (bot *Bot) Start() {
 	}
 	defer ds.Close()
 
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt)
+	// ds.AddHandler(onGuildCreate)
 
 	userBot, _ := ds.User("@me")
 	log.Printf("Logged in as: %v#%v", userBot.Username, userBot.Discriminator)
+
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt)
 	<-sig
 }
 
@@ -105,3 +107,19 @@ func (bot Bot) applicationCommandCreate(s *discordgo.Session, r *discordgo.Ready
 		fmt.Printf("/%s created\n", v.Name)
 	}
 }
+
+// func onGuildCreate(s *discordgo.Session, g *discordgo.GuildCreate) {
+// 	if g.Unavailable {
+// 		return
+// 	}
+//
+// 	for _, channel := range g.Channels {
+// 		if channel.Type == discordgo.ChannelTypeGuildText {
+// 			_, err := s.ChannelMessageSend(channel.ID,
+// 				"Olá! Serei seu bot de utilidades\nvocê pode começar com `.help`")
+// 			if err == nil {
+// 				break
+// 			}
+// 		}
+// 	}
+// }

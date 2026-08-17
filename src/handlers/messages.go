@@ -22,15 +22,24 @@ import (
 var prefix = "."
 
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if m.Author.Bot || len(m.Content) == 0 || m.Content[0] != '.' {
+	if m.Author.Bot {
+		return
+	}
+	if m.Content[0] != byte(prefix[0]) {
 		return
 	}
 
-	args := strings.Fields(strings.TrimPrefix(m.Content, "."))
-	help := [10]string{
+	args := strings.Fields(strings.TrimPrefix(m.Content, prefix))
+	if len(args) == 0 {
+		return
+	}
+
+	// oh gosh
+	help := []string{
 		"ping",
 		"help",
 		"time",
+		"timer",
 		"comandos",
 		"users",
 		"fact",
@@ -38,62 +47,73 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		"me",
 		"mine",
 		"calc",
-		// "expr",
 	}
-	if len(args) == 0 {
-		s.ChannelMessageSendReply(m.ChannelID, "### error: args == 0 ??", m.Reference())
-		return
 
-	}
+	// TODO: separate this
 	switch args[0] {
 	case "ping":
 		s.ChannelMessageSendReply(m.ChannelID, "pong", m.Reference())
-	case "help":
-		s.ChannelMessageSendReply(m.ChannelID, "## comandos de texto disponíveis: ", m.Reference())
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s", help))
 	case "time":
 		time := time.Now().Format("15h : 04m : 05s")
 		s.ChannelMessageSendReply(m.ChannelID, time, m.Reference())
-	case "comandos", "commands":
+	case "timer":
+		if len(args) != 2 {
+			s.ChannelMessageSendReply(m.ChannelID, "error: use **timer <segundos>**", m.Reference())
+			return
+		}
+
+		n, err := strconv.Atoi(args[1])
+		if err != nil {
+			s.ChannelMessageSendReply(m.ChannelID, "error: numero inválido\notempo é medido em segundos", m.Reference())
+			return
+		}
+		go s.ChannelTyping(m.ChannelID)
+		timer := time.NewTimer(time.Duration(n) * time.Second)
+		<-timer.C
+		s.ChannelMessageSendReply(m.ChannelID, "O tempo acabou", m.Reference())
+	case "comandos", "commands", "help":
 		s.ChannelMessageSendReply(m.ChannelID, "## commands available: ", m.Reference())
 		for _, v := range interactions.Commands {
-			s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
-				Content: fmt.Sprintf("Nome: %s\nDescrição: %s\n%v",
-					v.Name,
-					v.Description,
-					v.Version,
-				),
-			})
+			s.ChannelMessageSendComplex(m.ChannelID, ui.CommandsResponse(v))
 		}
-	case "users", "user", "usrs":
+		s.ChannelMessageSend(m.ChannelID, "## comandos de texto disponíveis: ")
+		var tc string
+		for _, cmd := range help {
+			tc += fmt.Sprintf(".%s\n", cmd)
+		}
+		s.ChannelMessageSend(m.ChannelID, tc)
+
+	case "users", "user", "usrs", "membros":
 		members, _ := s.GuildMembers(m.GuildID, "", 100)
-		s.ChannelMessageSendReply(m.ChannelID, "## users:\n`3 first members`", m.Reference())
-		for _, v := range members[0:3] {
+		s.ChannelMessageSendReply(m.ChannelID, "## Membros:\n`", m.Reference())
+		for _, v := range members {
 			response := ui.MembersResponse(v)
-			s.ChannelMessageSendComplex(m.ChannelID, response)
+			go s.ChannelMessageSendComplex(m.ChannelID, response)
 		}
 	case "fact", "cat", "catfact":
-		catFacts := catFacts(s, m)
+		catFacts := catFacts()
 		s.ChannelMessageSendReply(m.ChannelID, catFacts.Fact, m.Reference())
 	case "rand", "random", "r":
-		if len(args) == 2 {
-			num, err := strconv.Atoi(args[1])
-			if err != nil {
-				s.ChannelMessageSendReply(m.ChannelID, "error: invalid number", m.Reference())
-				return
-			}
-			r := rand.Intn(num)
+		if len(args) == 1 {
 			s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
-				Content: fmt.Sprintf("numero aleatório: %d", num),
+				Content: "numero aleatório: 10",
 			})
+			r := rand.Intn(10)
 			s.ChannelMessageSendReply(m.ChannelID, fmt.Sprint(r), m.Reference())
 			return
 		}
-		r := rand.Intn(10)
+
+		num, err := strconv.Atoi(args[1])
+		if err != nil {
+			s.ChannelMessageSendReply(m.ChannelID, "error: numero inválido", m.Reference())
+			return
+		}
+		r := rand.Intn(num)
 		s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{
-			Content: "numero aleatório: 10",
+			Content: fmt.Sprintf("numero aleatório: %d", num),
 		})
 		s.ChannelMessageSendReply(m.ChannelID, fmt.Sprint(r), m.Reference())
+
 	case "me":
 		usr, _ := s.User(m.Author.ID)
 		s.ChannelMessageSendReply(m.ChannelID, "## you:", m.Reference())
@@ -106,7 +126,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			})
 			count, err := strconv.Atoi(args[1])
 			if err != nil {
-				s.ChannelMessageSendReply(m.ChannelID, "error: invalid number", m.Reference())
+				s.ChannelMessageSendReply(m.ChannelID, "error: numero inválido", m.Reference())
 				return
 			}
 			serverPing(s, m, count)
@@ -123,38 +143,34 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			s.ChannelMessageSendReply(m.ChannelID, "use **calc <expressão>**", m.Reference())
 			return
 		}
-		if len(args) >= 2 {
-			for _, v := range args[1:] {
-				if strings.Contains(v, "x") || strings.Contains(v, "X") {
-					s.ChannelMessageSendReply(m.ChannelID, "use * ao invés de x; seu boboca", m.Reference())
-					return
-				}
-			}
-			program, err := expr.Compile(strings.Join(args[1:], " "))
-			if err != nil {
-				fmt.Println(err)
-				s.ChannelMessageSendReply(m.ChannelID, "error: invalid compile", m.Reference())
+		for _, v := range args[1:] {
+			if strings.Contains(v, "x") || strings.Contains(v, "X") {
+				s.ChannelMessageSendReply(m.ChannelID, "use * ao invés de x; seu boboca", m.Reference())
 				return
 			}
-
-			result, err := expr.Run(program, nil)
-			if err != nil {
-				fmt.Println(err)
-				s.ChannelMessageSendReply(m.ChannelID, "error: invalid math expression", m.Reference())
-				return
-			}
-			s.ChannelMessageSendReply(m.ChannelID, fmt.Sprint(result), m.Reference())
 		}
-		// case "expr":
+		program, err := expr.Compile(strings.Join(args[1:], " "))
+		if err != nil {
+			fmt.Println(err)
+			s.ChannelMessageSendReply(m.ChannelID, "error: calculo não suportado e/ou inválido (ainda)\n", m.Reference())
+			return
+		}
+
+		result, err := expr.Run(program, nil)
+		if err != nil {
+			fmt.Println(err)
+			s.ChannelMessageSendReply(m.ChannelID, "error: expressão matemática inválida", m.Reference())
+			return
+		}
+		s.ChannelMessageSendReply(m.ChannelID, fmt.Sprint(result), m.Reference())
 	}
 }
 
-const catFactAPIURL = "https://catfact.ninja"
-
-func catFacts(s *discordgo.Session, m *discordgo.MessageCreate) struct {
+func catFacts() struct {
 	Fact   string `json:"fact"`
 	Length int    `json:"length"`
 } {
+	catFactAPIURL := "https://catfact.ninja"
 	r, err := http.Get(catFactAPIURL + "/fact")
 	if err != nil {
 		log.Println(err)
@@ -210,4 +226,7 @@ func serverPing(s *discordgo.Session, m *discordgo.MessageCreate, count ...int) 
 		return ""
 	}
 	return "ok"
+}
+
+func calc() {
 }
