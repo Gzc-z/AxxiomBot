@@ -3,10 +3,12 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"math/rand"
 	"net"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -169,6 +171,38 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	case "banir", "ban":
 		s.ChannelMessageSendReply(m.ChannelID, fmt.Sprintf("%v banido", args[1]), m.Reference())
+
+	case "forge":
+		params := url.Values{}
+		params.Add("gameId", "432")
+		params.Add("index", "1")
+		params.Add("pageSize", "10")
+
+		endpoint := "https://api.curseforge.com/v1/mods/search?" + params.Encode()
+		req, err := http.NewRequest(
+			http.MethodGet,
+			endpoint,
+			nil,
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("x-api-key", config.GetMinecraft().Forge)
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer resp.Body.Close()
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(string(body))
 
 	case "calc", "math", "c":
 		if len(args) == 1 {
