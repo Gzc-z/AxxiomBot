@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"axiom/src/interactions"
+	ui "axiom/src/responses"
 	temputils "axiom/src/tempUtils"
-	"axiom/src/ui"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/bwmarrin/snowflake"

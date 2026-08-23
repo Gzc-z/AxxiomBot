@@ -24,11 +24,11 @@ func MembersResponse(v *discordgo.Member) *discordgo.MessageSend {
 					Text: "",
 				},
 				Fields: []*discordgo.MessageEmbedField{
-					{
-						Name:   "ID",
-						Value:  v.User.ID,
-						Inline: false,
-					},
+					// {
+					// 	Name:   "ID",
+					// 	Value:  v.User.ID,
+					// 	Inline: false,
+					// },
 				},
 				Image: &discordgo.MessageEmbedImage{
 					URL: v.AvatarURL(""),

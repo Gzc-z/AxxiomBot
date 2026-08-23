@@ -9,8 +9,8 @@ import (
 	"os/signal"
 
 	"axiom/src/config"
-	"axiom/src/handlers"
 	"axiom/src/interactions"
+	"axiom/src/interactions/handlers"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"

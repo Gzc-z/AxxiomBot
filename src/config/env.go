@@ -16,8 +16,9 @@ var (
 )
 
 type Minecraft struct {
-	IP   string
-	PORT string
+	IP    string
+	PORT  string
+	Forge string
 }
 type Discord struct {
 	GuildID string
@@ -42,8 +43,9 @@ func load() *Config {
 				AppID:   getEnv("APPLICATION_ID"),
 			},
 			Minecraft: Minecraft{
-				PORT: getEnv("MINECRAFT_SERVER_PORT"),
-				IP:   getEnv("MINECRAFT_SERVER_IP"),
+				PORT:  getEnv("MINECRAFT_SERVER_PORT"),
+				IP:    getEnv("MINECRAFT_SERVER_IP"),
+				Forge: getEnv("MINECRAFT_FORGE_API"),
 			},
 		}
 	})
