@@ -23,14 +23,66 @@ import (
 
 var prefix = "."
 
+type Context struct {
+	s    *discordgo.Session
+	m    *discordgo.MessageCreate
+	args []string
+}
+
+func Ping(ctx *Context) {
+	ctx.s.ChannelMessageSendReply(ctx.m.ChannelID, "pong", ctx.m.Reference())
+}
+
+func Time(ctx *Context) {
+	time := time.Now().Format("15h : 04m : 05s")
+	ctx.s.ChannelMessageSendReply(ctx.m.ChannelID, time, ctx.m.Reference())
+}
+
+func Timer(ctx *Context) {
+	s := ctx.s
+	m := ctx.m
+	args := ctx.args
+
+	if len(args) != 2 {
+		s.ChannelMessageSendReply(m.ChannelID, "error: use **timer <segundos>**", m.Reference())
+		return
+	}
+
+	n, err := strconv.Atoi(args[1])
+	if err != nil {
+		s.ChannelMessageSendReply(m.ChannelID, "error: numero inválido\no tempo é medido em segundos", m.Reference())
+		return
+	}
+	s.ChannelTyping(m.ChannelID)
+	timer := time.NewTimer(time.Duration(n) * time.Second)
+	<-timer.C
+	s.ChannelMessageSendReply(m.ChannelID, "O tempo acabou", m.Reference())
+}
+
+func Me(ctx *Context) {
+	usr, _ := ctx.s.User(ctx.m.Author.ID)
+	ctx.s.ChannelMessageSendReply(ctx.m.ChannelID, "## you:", ctx.m.Reference())
+	response := ui.UserResponse(usr)
+	ctx.s.ChannelMessageSendComplex(ctx.m.ChannelID, response)
+}
+
+var BuiltInCmds = map[string]func(*Context){
+	"ping":  Ping,
+	"time":  Time,
+	"timer": Timer,
+	"me":    Me,
+}
+
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.Bot {
 		return
-	}
-	if m.Content == "" {
+	} else if m.Content == "" {
+		return
+	} else if isImage(s, m) {
 		return
 	}
-	if m.Content[0] != byte(prefix[0]) {
+
+	if m.GuildID != config.GetGuildID() {
 		return
 	}
 
@@ -38,7 +90,6 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if len(args) == 0 {
 		return
 	}
-
 	help := []string{
 		"ping",
 		"help",
@@ -53,28 +104,16 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		"calc",
 	}
 
-	// TODO: separate this
-	switch args[0] {
-	case "ping":
-		s.ChannelMessageSendReply(m.ChannelID, "pong", m.Reference())
-	case "time":
-		time := time.Now().Format("15h : 04m : 05s")
-		s.ChannelMessageSendReply(m.ChannelID, time, m.Reference())
-	case "timer":
-		if len(args) != 2 {
-			s.ChannelMessageSendReply(m.ChannelID, "error: use **timer <segundos>**", m.Reference())
-			return
-		}
+	if m.Content[0] != byte(prefix[0]) {
+		return
+	}
+	cmd, ok := BuiltInCmds[args[0]]
+	if !ok {
+		return
+	}
+	cmd(&Context{s, m, args})
 
-		n, err := strconv.Atoi(args[1])
-		if err != nil {
-			s.ChannelMessageSendReply(m.ChannelID, "error: numero inválido\no tempo é medido em segundos", m.Reference())
-			return
-		}
-		s.ChannelTyping(m.ChannelID)
-		timer := time.NewTimer(time.Duration(n) * time.Second)
-		<-timer.C
-		s.ChannelMessageSendReply(m.ChannelID, "O tempo acabou", m.Reference())
+	switch args[0] {
 	case "comandos", "commands", "help":
 		s.ChannelMessageSendReply(m.ChannelID, "## commands available: ", m.Reference())
 		for _, v := range interactions.Commands {
@@ -111,11 +150,6 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		r := rand.Intn(num)
 		s.ChannelMessageSendReply(m.ChannelID, fmt.Sprint(r), m.Reference())
 
-	case "me":
-		usr, _ := s.User(m.Author.ID)
-		s.ChannelMessageSendReply(m.ChannelID, "## you:", m.Reference())
-		response := ui.UserResponse(usr)
-		s.ChannelMessageSendComplex(m.ChannelID, response)
 	case "mine":
 		if len(args) != 2 {
 			pings := 5
@@ -205,6 +239,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		fmt.Println(string(body))
 
 	case "calc", "math", "c":
+		// ÷×π√∆£^✓%
 		if len(args) == 1 {
 			s.ChannelMessageSendReply(m.ChannelID, "use **calc <expressão>**", m.Reference())
 			return
@@ -278,4 +313,13 @@ func serverPing(s *discordgo.Session, m *discordgo.MessageCreate, count ...int) 
 		Time:   time.Since(start),
 	}
 	return p
+}
+
+func isImage(s *discordgo.Session, m *discordgo.MessageCreate) bool {
+	for _, a := range m.Attachments {
+		if a.ContentType != "" && strings.HasPrefix(a.ContentType, "image/") {
+			return true
+		}
+	}
+	return false
 }
