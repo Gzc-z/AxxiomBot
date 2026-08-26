@@ -30,10 +30,12 @@ type Context struct {
 }
 
 var BuiltInCmds = map[string]func(*Context){
-	"ping":  Ping,
-	"time":  Time,
-	"timer": Timer,
-	"me":    Me,
+	"ping":    Ping,
+	"time":    Time,
+	"timer":   Timer,
+	"me":      Me,
+	"members": Members,
+	"welcome": Welcome,
 }
 
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -45,9 +47,9 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	if m.GuildID != config.GetGuildID() {
-		return
-	}
+	// if m.GuildID != config.GetGuildID() {
+	// 	return
+	// }
 
 	args := strings.Fields(strings.TrimPrefix(m.Content, prefix))
 	if len(args) == 0 {
@@ -250,6 +252,16 @@ func Me(ctx *Context) {
 	ctx.s.ChannelMessageSendReply(ctx.m.ChannelID, "## you:", ctx.m.Reference())
 	response := ui.UserResponse(usr)
 	ctx.s.ChannelMessageSendComplex(ctx.m.ChannelID, response)
+}
+
+func Welcome(ctx *Context) {
+	args := ctx.args
+	if len(args) == 2 {
+		ctx.s.ChannelMessageSendReply(ctx.m.ChannelID, "wel come: "+args[1], ctx.m.Reference())
+		return
+	}
+	usr, _ := ctx.s.User(ctx.m.Author.ID)
+	ctx.s.ChannelMessageSendReply(ctx.m.ChannelID, "wel come: "+usr.GlobalName, ctx.m.Reference())
 }
 
 func Members(ctx *Context) {
