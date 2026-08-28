@@ -4,7 +4,6 @@ package bot
 import (
 	"fmt"
 	"log"
-	_ "net/http/pprof"
 	"os"
 	"os/signal"
 
