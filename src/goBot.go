@@ -89,7 +89,7 @@ func (bot Bot) SessionEvents() {
 	ds := bot.Session
 	handlers := []any{
 		handlers.MessageCreate,
-		handlers.InteractionCreate,
+		// handlers.InteractionCreate,
 	}
 	for _, handler := range handlers {
 		go ds.AddHandler(handler)
@@ -107,18 +107,18 @@ func (bot Bot) applicationCommandCreate(s *discordgo.Session, r *discordgo.Ready
 	}
 }
 
-// func onGuildCreate(s *discordgo.Session, g *discordgo.GuildCreate) {
-// 	if g.Unavailable {
-// 		return
-// 	}
-//
-// 	for _, channel := range g.Channels {
-// 		if channel.Type == discordgo.ChannelTypeGuildText {
-// 			_, err := s.ChannelMessageSend(channel.ID,
-// 				"Olá! Serei seu bot de utilidades\nvocê pode começar com `.help`")
-// 			if err == nil {
-// 				break
-// 			}
-// 		}
-// 	}
-// }
+func onGuildCreate(s *discordgo.Session, g *discordgo.GuildCreate) {
+	if g.Unavailable {
+		return
+	}
+
+	for _, channel := range g.Channels {
+		if channel.Type == discordgo.ChannelTypeGuildText {
+			_, err := s.ChannelMessageSend(channel.ID,
+				"Olá! Serei seu bot de utilidades\n`.help`")
+			if err == nil {
+				break
+			}
+		}
+	}
+}
