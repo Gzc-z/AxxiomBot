@@ -50,6 +50,9 @@ var BuiltInScripts = map[string]Script{
 	"help":    {Name: "help", Func: Help},
 }
 
+// this would call API -> external scripts
+// var ExtScript = map[string]API{}
+
 func (src *Script) mkalias(alias ...string) {
 	for _, v := range alias {
 		src.Alias = append(src.Alias, v)
@@ -88,8 +91,10 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			argsLength: len(args),
 		})
 	} else {
+		// command not found
 	}
 
+	// other default additional commands
 	switch args[0] {
 	case "ping":
 		s.ChannelMessageSendReply(m.ChannelID, "pong", m.Reference())
@@ -122,8 +127,6 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	case "banir", "ban":
 		s.ChannelMessageSendReply(m.ChannelID, fmt.Sprintf("%v foi banido", args[1]), m.Reference())
 
-	case "forge":
-		// remove temporarily forge
 	}
 }
 
@@ -165,7 +168,10 @@ func Timer(ctx *Context) {
 func Members(ctx *Context) {
 	members, _ := ctx.s.GuildMembers(ctx.m.GuildID, "", 100)
 	ctx.s.ChannelMessageSendReply(ctx.m.ChannelID, "## Membros:\n`", ctx.m.Reference())
-	for _, v := range members[:10] {
+	if len(members) > 10 {
+		return
+	}
+	for _, v := range members {
 		response := ui.MembersResponse(v)
 		ctx.s.ChannelMessageSendComplex(ctx.m.ChannelID, response)
 	}
@@ -250,6 +256,7 @@ func Mine(ctx *Context) {
 	for i := range pings {
 		stats := serverPing(s, m)
 		if !stats.Online {
+			// s.ChannelMessageSendReply(m.ChannelID, s, m.Reference)
 			s.ChannelMessageSendReply(m.ChannelID, "Online: 🔴", m.Reference())
 			return
 		}
