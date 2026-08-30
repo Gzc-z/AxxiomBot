@@ -13,7 +13,7 @@ import (
 
 	"axiom/src/config"
 	"axiom/src/interactions"
-	ui "axiom/src/responses"
+	ui "axiom/src/interactions/texts"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/expr-lang/expr"
@@ -69,9 +69,9 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	if m.GuildID != config.GetGuildID() {
-		return
-	}
+	// if m.GuildID != config.GetGuildID() {
+	// 	return
+	// }
 
 	args := strings.Fields(strings.TrimPrefix(m.Content, prefix))
 	if len(args) == 0 {
@@ -110,7 +110,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	case "garçom":
 		members, _ := s.GuildMembers(m.GuildID, "", 100)
 		user := members[rand.Intn(len(members))]
-		response := ui.MembersResponse(user)
+		response := ui.MembersProfile(user)
 
 		author := fmt.Sprintf("<@%s>", m.Author.ID)
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%v 🤵‍♂️ \ntrouxe cerveja :)", author))
@@ -125,8 +125,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSendReply(m.ChannelID, "wel come: "+usr.GlobalName, m.Reference())
 
 	case "banir", "ban":
-		s.ChannelMessageSendReply(m.ChannelID, fmt.Sprintf("%v foi banido", args[1]), m.Reference())
-
+		s.ChannelMessageSendReply(m.ChannelID, fmt.Sprintf("%v foi banido(a)", args[1]), m.Reference())
 	}
 }
 
@@ -172,7 +171,7 @@ func Members(ctx *Context) {
 		return
 	}
 	for _, v := range members {
-		response := ui.MembersResponse(v)
+		response := ui.MembersProfile(v)
 		ctx.s.ChannelMessageSendComplex(ctx.m.ChannelID, response)
 	}
 }

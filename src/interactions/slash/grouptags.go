@@ -1,4 +1,4 @@
-package grouptags
+package slash
 
 import (
 	"encoding/json"
@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"axiom/src/interactions"
-	ui "axiom/src/responses"
 	temputils "axiom/src/tempUtils"
 
 	"github.com/bwmarrin/discordgo"
@@ -24,7 +23,7 @@ var (
 )
 
 func PtsCommandResponse(s *discordgo.Session, i *discordgo.InteractionCreate) error {
-	ptsResponse := ui.PtsResponse()
+	ptsResponse := PtsResponse()
 	response := groupTagsUpdate(*ptsResponse)
 
 	err := s.InteractionRespond(i.Interaction, response)
@@ -52,15 +51,15 @@ func PtsGroupTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	// TODO: control flow with map
 	switch customID {
 	case "newGroupTag":
-		response = ui.GroupsTagResponse()
+		response = GroupsTagResponse()
 	case "delGroupTag":
-		response = ui.DelModalGroup()
+		response = DelModalGroup()
 	case "selectGroupTag":
 		response = selectGroupTag(data)
 	case "createTag":
-		response = ui.ModalTag()
+		response = ModalTag()
 	case "delTag":
-		response = ui.DelModalTag()
+		response = DelModalTag()
 	case "rightPage":
 		IncrementPage()
 		response = selectGroupTag(data)
@@ -120,7 +119,7 @@ func SubmitNewTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	}
 	group.Tags = append(group.Tags, inputs)
 
-	response := ui.TagSelectMenuResponse(*group, page)
+	response := TagSelectMenuResponse(*group, page)
 	err = s.InteractionRespond(i.Interaction, response)
 	if err != nil {
 		return err
@@ -150,7 +149,7 @@ func SubmitDelTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 				return nil
 			}
 			for i, tag := range group.Tags {
-				if tag.ID == input.AsValue() {
+				if tag.ID == *input.TagSelected {
 					group.Tags = append(group.Tags[:i], group.Tags[i+1:]...)
 					newContext, _ := json.MarshalIndent(gtValues, "", "	")
 					os.WriteFile(file, newContext, 0o644)
@@ -208,7 +207,7 @@ func DelGroupTag(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 			newContext, _ := json.MarshalIndent(gtValues, "", "	")
 			os.WriteFile(file, newContext, 0o644)
 
-			ptsResponse := ui.PtsResponse()
+			ptsResponse := PtsResponse()
 			response = groupTagsUpdate(*ptsResponse)
 		}
 	}
@@ -263,14 +262,14 @@ func selectGroupTag(data discordgo.MessageComponentInteractionData) *discordgo.I
 	if groupID != 0 {
 		for _, group := range groupTags {
 			if group.ID == groupID {
-				response = ui.TagSelectMenuResponse(*group, page)
+				response = TagSelectMenuResponse(*group, page)
 				return response
 			}
 		}
 	}
 	for _, group := range groupTags {
 		if group.ID.String() == data.Values[0] { // selectMenu Options
-			response = ui.TagSelectMenuResponse(*group, page)
+			response = TagSelectMenuResponse(*group, page)
 			groupID = group.ID
 		}
 	}

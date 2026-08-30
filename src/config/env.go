@@ -24,6 +24,9 @@ type Discord struct {
 	GuildID string
 	AppID   string
 }
+type IA struct {
+	AI_API string
+}
 
 type Config struct {
 	Discord   Discord

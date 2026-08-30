@@ -11,7 +11,7 @@ func randomColor() int {
 	return rand.Intn(0xffffff)
 }
 
-func MembersResponse(v *discordgo.Member) *discordgo.MessageSend {
+func MembersProfile(v *discordgo.Member) *discordgo.MessageSend {
 	return &discordgo.MessageSend{
 		Content: "",
 		Embeds: []*discordgo.MessageEmbed{
@@ -32,6 +32,25 @@ func MembersResponse(v *discordgo.Member) *discordgo.MessageSend {
 				},
 				Image: &discordgo.MessageEmbedImage{
 					URL: v.AvatarURL(""),
+				},
+			},
+		},
+	}
+}
+
+func MembersImage(v1, v2 *discordgo.Member) *discordgo.MessageSend {
+	return &discordgo.MessageSend{
+		Embeds: []*discordgo.MessageEmbed{
+			{
+				Color: int(0xffffff),
+				Image: &discordgo.MessageEmbedImage{
+					URL: v1.AvatarURL(""),
+				},
+			},
+			{
+				Color: int(0xffffff),
+				Image: &discordgo.MessageEmbedImage{
+					URL: v2.AvatarURL(""),
 				},
 			},
 		},

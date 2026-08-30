@@ -3,7 +3,7 @@ package handlers
 import (
 	"fmt"
 
-	"axiom/src/interactions/grouptags"
+	"axiom/src/interactions/slash"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -13,23 +13,24 @@ type funcICHandler func(*discordgo.Session, *discordgo.InteractionCreate) error
 var (
 	// for on strings assigning to a func type
 	commandInteractions = map[string]funcICHandler{
-		"pts": grouptags.PtsCommandResponse,
+		"pts": slash.PtsCommandResponse,
+		// "IA":
 	}
 	messageComponentInteractions = map[string]funcICHandler{
-		"ptsReturn":      grouptags.PtsCommandResponse,
-		"selectGroupTag": grouptags.PtsGroupTag,
-		"newGroupTag":    grouptags.PtsGroupTag,
-		"delGroupTag":    grouptags.PtsGroupTag,
-		"createTag":      grouptags.PtsGroupTag,
-		"delTag":         grouptags.PtsGroupTag,
-		"rightPage":      grouptags.PtsGroupTag,
-		"leftPage":       grouptags.PtsGroupTag,
+		"ptsReturn":      slash.PtsCommandResponse,
+		"selectGroupTag": slash.PtsGroupTag,
+		"newGroupTag":    slash.PtsGroupTag,
+		"delGroupTag":    slash.PtsGroupTag,
+		"createTag":      slash.PtsGroupTag,
+		"delTag":         slash.PtsGroupTag,
+		"rightPage":      slash.PtsGroupTag,
+		"leftPage":       slash.PtsGroupTag,
 	}
 	submitModalInteractions = map[string]funcICHandler{
-		"submitNewGroupTag": grouptags.SubmitNewGrouptag,
-		"submitDelGroupTag": grouptags.DelGroupTag,
-		"submitNewTag":      grouptags.SubmitNewTag,
-		"submitDelTag":      grouptags.SubmitDelTag,
+		"submitNewGroupTag": slash.SubmitNewGrouptag,
+		"submitDelGroupTag": slash.DelGroupTag,
+		"submitNewTag":      slash.SubmitNewTag,
+		"submitDelTag":      slash.SubmitDelTag,
 	}
 )
 
