@@ -1,5 +1,11 @@
 # AxxiomBot
 
+> [!IMPORTANT]
+Este projeto está atualmente em fase de desenvolvimento e pode conter funcionalidades incompletas, bugs e mudanças incompatíveis.
+O código nesta branch não deve ser considerado estável ou pronto para uso.
+
+---
+
 Um bot administrativo para o Discord, projetado para facilitar processos, tarefas e problemas comuns.  
 futuramente pretendo ligar esse bot a outros contextos, se estendendo com outros projetos.  
 
@@ -18,6 +24,7 @@ implementações futuras:
 - 1 musica aleatória por dia
 - jogo de palavras
 - rank de algo com enquete
+- IA simples
 
 # configuração
 
@@ -32,20 +39,27 @@ implementações futuras:
 
 em seguida use `make run` na base do projeto para iniciar o bot
 
-criar novo aplicativo:  
-[![criar nova aplicação](./docs/New_app.png)](https://discord.com/developers/applications#:~:text=a)
-![redefinir e copiar token](./docs/token.png)
+criar novo aplicativo:<br>
+[![criar nova aplicação](./assets/New_app.png)](https://discord.com/developers/applications#:~:text=a)
+![redefinir e copiar token](./assets/token.png)
 
-# nome e contexto
+## nome e contexto
 
 # checklist atual
 
-* [x] escalar o bot para diferentes tags com diferentes propositos
-* [x] atualizar README e documentações
 * [x] colocar mais coisas na checklist
 * [x] escolher um bom nome
-* [x] colocar mais coisas nas implementações futuras
-* [ ] refatorar o código gambiarrento
 * [ ] fazer o bot para outros idiomas
+* [ ] github pages
+* [ ] atualizar README e documentações
+* [ ] implementar banco de dados para comandos do bot
+* [ ] implementar comandos de administração
+* [ ] implementar docker
+* adaptar arquiteturas dependendo da fase do projeto
 
-não olhe o código, não faça isso com sua vida
+# Como contribuir
+
+<!-- [CONTRIBUTING.md](./CONTRIBUTING.md) -->
+1. Faça um fork do projeto
+2. Crie uma branch com a nova feature (`git checkout -b feat/your-feature`)
+5. faça um Pull Request
