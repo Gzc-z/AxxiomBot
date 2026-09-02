@@ -10830,6 +10830,7 @@ textarea.form-control-lg {
   background-attachment: scroll;
   background-position: center;
   background-size: cover;
+  padding-bottom: 0rem !important;
 }
 
 
@@ -10858,6 +10859,12 @@ textarea.form-control-lg {
   }
 
 
+.header {
+    margin-bottom: 0rem !important;
+    padding-bottom: 0rem !important;
+    padding-top: 1rem !important;
+}
+
 footer {
     display: flex;
     justify-content: center;
@@ -10869,4 +10876,45 @@ footer {
     width: auto;
     margin: 0 0 0 0;
     padding 0;
+}
+
+
+
+/* alerts */
+.alert {
+    padding: 16px;
+    margin: 26px 8px;
+    border-radius: 8px;
+    border: 1px solid;
+    width: 34%;
+    position: absolute;
+}
+
+.alert-important {
+    /* background: #1c1c00; */
+    border-color: #d4a72c;
+    color: #e8e8e8;
+}
+
+.alert-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #d4a72c;
+}
+
+.alert-title span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 20px;
+    height: 20px;
+
+    border: 2px solid currentColor;
+    border-radius: 50%;
+
+    font-size: 13px;
+    font-weight: bold;
 }
