@@ -62,7 +62,7 @@
   --bs-body-font-weight: 400;
   --bs-body-line-height: 1.5;
   --bs-body-color: #fff;
-  --bs-body-bg: #323339;
+  --bs-body-bg: #2a2b2d;
   --bs-border-width: 1px;
   --bs-border-style: solid;
   --bs-border-color: #dee2e6;
@@ -7783,8 +7783,8 @@ textarea.form-control-lg {
 }
 
 .py-5 {
-  padding-top: 0rem !important;
-  padding-bottom: 0rem !important;
+  padding-top: 2rem !important;
+  padding-bottom: 2rem !important;
 }
 
 .pt-0 {
@@ -8161,7 +8161,7 @@ textarea.form-control-lg {
 }
 
 .bg-dark {
-  --bs-bg-opacity: 1;
+  --bs-bg-opacity: .4;
   background-color: rgba(var(--bs-dark-rgb), var(--bs-bg-opacity)) !important;
 }
 
@@ -10856,3 +10856,17 @@ textarea.form-control-lg {
     height: 100%;
     object-fit: cover;
   }
+
+
+footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10rem;
+}
+
+.m50 {
+    width: auto;
+    margin: 0 0 0 0;
+    padding 0;
+}
