@@ -24,13 +24,14 @@ type Discord struct {
 	GuildID string
 	AppID   string
 }
-type IA struct {
-	AI_API string
+type AI struct {
+	AI_TOKEN string
 }
 
 type Config struct {
 	Discord   Discord
 	Minecraft Minecraft
+	AI        AI
 }
 
 func load() *Config {
@@ -49,6 +50,9 @@ func load() *Config {
 				PORT:  getEnv("MINECRAFT_SERVER_PORT"),
 				IP:    getEnv("MINECRAFT_SERVER_IP"),
 				Forge: getEnv("MINECRAFT_FORGE_API"),
+			},
+			AI: AI{
+				AI_TOKEN: getEnv("AI_TOKEN"),
 			},
 		}
 	})
@@ -76,4 +80,9 @@ func GetMinecraft() Minecraft {
 func GetAppID() string {
 	cfg := load()
 	return cfg.Discord.AppID
+}
+
+func GetAI() string {
+	cfg := load()
+	return cfg.AI.AI_TOKEN
 }

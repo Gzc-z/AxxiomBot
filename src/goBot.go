@@ -75,7 +75,7 @@ func (bot Bot) AddSessionEvents() {
 	for _, handler := range handlers {
 		go ds.AddHandler(handler)
 	}
-	ds.AddHandler(bot.commandCreate)
+	go ds.AddHandler(bot.commandCreate)
 }
 
 func (bot *Bot) Close() {

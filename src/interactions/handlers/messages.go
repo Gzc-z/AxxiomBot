@@ -43,7 +43,7 @@ var BuiltInScripts = map[string]Script{
 	"timer":   {Func: Timer},
 	"members": {Func: Members},
 	// "color":   {Func: RandomColor}, idk what i can do here
-	// "calc":    {Func: Calc}, temporary disabled to verify security
+	// "calc":    {Func: Calc}, // temporary disabled to verify security
 	"catfact": {Func: CatFacts},
 	"random":  {Func: Random},
 	"mine":    {Func: Mine},
