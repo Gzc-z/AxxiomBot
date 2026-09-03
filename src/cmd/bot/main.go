@@ -10,10 +10,10 @@ import (
 func main() {
 	discordBot := bot.NewBot()
 
-	go discordBot.Start()
+	discordBot.Start()
 	defer discordBot.Close()
 
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt)
-	<-sig
+	make := make(chan os.Signal, 1)
+	signal.Notify(make, os.Interrupt)
+	<-make
 }

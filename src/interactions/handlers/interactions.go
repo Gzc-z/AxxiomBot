@@ -14,7 +14,7 @@ var (
 	// for on strings assigning to a func type
 	commandInteractions = map[string]funcICHandler{
 		"pts": slash.PtsCommandResponse,
-		// "IA":
+		"axx": slash.Axx,
 	}
 	messageComponentInteractions = map[string]funcICHandler{
 		"ptsReturn":      slash.PtsCommandResponse,
