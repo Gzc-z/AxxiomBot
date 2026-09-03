@@ -7,13 +7,14 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
 
-	"axiom/src/config"
-	"axiom/src/interactions"
-	ui "axiom/src/interactions/texts"
+	"axxiom/src/config"
+	"axxiom/src/interactions"
+	ui "axxiom/src/interactions/texts"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/expr-lang/expr"
@@ -34,20 +35,19 @@ type Context struct {
 }
 
 type Script struct {
-	Name  string
 	Alias []string
 	Func  func(*Context)
 }
 
 var BuiltInScripts = map[string]Script{
-	"timer":   {Name: "timer", Func: Timer},
-	"members": {Name: "members", Func: Members},
-	"color":   {Name: "color", Func: RandomColor},
-	"calc":    {Name: "calc", Func: Calc},
-	"catfact": {Name: "catfact", Func: CatFacts},
-	"random":  {Name: "random", Func: Random},
-	"mine":    {Name: "mine", Func: Mine},
-	"help":    {Name: "help", Func: Help},
+	"timer":   {Func: Timer},
+	"members": {Func: Members},
+	// "color":   {Func: RandomColor}, idk what i can do here
+	// "calc":    {Func: Calc}, temporary disabled to verify security
+	"catfact": {Func: CatFacts},
+	"random":  {Func: Random},
+	"mine":    {Func: Mine},
+	"help":    {Func: Help},
 }
 
 // this would call API -> external scripts
@@ -69,9 +69,10 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	// if m.GuildID != config.GetGuildID() {
-	// 	return
-	// }
+	roles := strings.Split(config.GetGuildID(), ",")
+	if !slices.Contains(roles, m.GuildID) {
+		return
+	}
 
 	args := strings.Fields(strings.TrimPrefix(m.Content, prefix))
 	if len(args) == 0 {
@@ -210,8 +211,12 @@ func Calc(ctx *Context) {
 	expression := strings.Join(ctx.args[1:], " ")
 	expression = strings.Replace(expression, "×", "*", -1)
 	expression = strings.Replace(expression, "÷", "/", -1)
-	//
-	// strings.Replace(v, "π", "3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930381964428810975665933446128475648233786783165271201909145648566923460348610454326648213393607260249141273724587006606315588174881520920962829254091715364367892590360011330530548820466521384146951941511609433057270365759591953092186117381932611793105118548074462379962749567351885752724891227938183011", -1)
+	if len(expression) > 100 {
+		fmt.Println("expression too long")
+		ctx.s.ChannelMessageSendReply(m.ChannelID, "error: calculo muuuito grande\n", m.Reference())
+		return
+	}
+
 	comp, err := expr.Compile(expression)
 	if err != nil {
 		fmt.Println(err)

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"axiom/src/interactions"
-	temputils "axiom/src/tempUtils"
+	"axxiom/src/interactions"
+	temputils "axxiom/src/tempUtils"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/bwmarrin/snowflake"

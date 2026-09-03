@@ -3,7 +3,7 @@ package slash
 import (
 	"fmt"
 
-	"axiom/src/interactions"
+	"axxiom/src/interactions"
 
 	"github.com/bwmarrin/discordgo"
 )

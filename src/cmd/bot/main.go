@@ -4,7 +4,7 @@ import (
 	"os"
 	"os/signal"
 
-	bot "axiom/src"
+	bot "axxiom/src"
 )
 
 func main() {
