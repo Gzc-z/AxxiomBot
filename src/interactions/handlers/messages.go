@@ -83,6 +83,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
+	s.ChannelTyping(m.ChannelID)
 	cmd, ok := BuiltInScripts[args[0]]
 	if ok {
 		cmd.Func(&Context{
@@ -126,7 +127,14 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSendReply(m.ChannelID, "wel come: "+usr.GlobalName, m.Reference())
 
 	case "banir", "ban":
-		s.ChannelMessageSendReply(m.ChannelID, fmt.Sprintf("%v foi banido(a)", args[1]), m.Reference())
+		s.ChannelMessageSendReply(m.ChannelID, args[1]+" foi banido(a)", m.Reference())
+	case "axx", "axxiom", "Axxiom":
+		s.ChannelMessageSendReply(m.ChannelID, "Use /axx", m.Reference())
+	case "jogar":
+		if len(args) == 2 {
+			s.ChannelMessageSendReply(m.ChannelID, args[1]+" joga com o menino pô", m.Reference())
+			return
+		}
 	}
 }
 

@@ -2,6 +2,7 @@
 info
 infos
 *.sh
+.air.toml
 
 # Go
 bin
