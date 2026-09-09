@@ -10935,26 +10935,21 @@ footer {
     font-weight: bold;
 }
 
-/* mid */
+/* what's hero? idk either */
 .hero {
     /* max-width: 900px; */
     /* text-align: left; */
     display: flex;
     flex-direction: row;
-    margin: auto;
+    align-items: center;
+    margin: 0 auto;
     margin-left: 15%;
-    width: 80%;
+    width: min(1200% 90%);
     gap: 2em;
 }
 
 .hero > div {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-.hero > div > img{
-    width: 70%;
 }
 
 h2 {
@@ -11018,4 +11013,81 @@ p {
     p {
     font-size: 1rem;
     }
+}
+
+
+.hero-carousel {
+    position: relative;
+    /* width: 100%; */
+    overflow: hidden;
+    border-radius: 12px;
+    aspect-ratio: 16 / 10;
+    display: flex;
+    align-items: center;
+}
+
+.hero-carousel img {
+    position: absolute;
+    width: 100%; /*this fs have to be 100%*/
+    height: 100%;
+    object-fit: cover;
+
+    transform: translateX(100%);
+    transition:
+        transform 0.5s ease;
+}
+
+.hero-carousel img.active {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.hero-carousel img.exit-left {
+    opacity: 3;
+    transform: translateX(-100%);
+
+    /* transition: */
+    /*     transform 0.5s ease, */
+    /*     opacity 0.5s ease; */
+}
+
+.hero-carousel img.exit-right {
+    opacity: 3;
+    transform: translateX(100%);
+
+    /* transition: */
+    /*     transform 0.5s ease, */
+    /*     opacity 0.5s ease; */
+}
+
+.carousel-btn {
+    position: absolute;
+    z-index: 10;
+    top: 50%;
+    transform: translateY(-50%);
+
+    border: none;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+
+    cursor: pointer;
+    font-size: 20px;
+
+    transition: background 0.2s ease;
+}
+
+.carousel-btn:hover {
+    background: rgba(0, 0, 0, 0.75);
+}
+
+.carousel-btn.prev {
+    left: 10px;
+}
+
+.carousel-btn.next {
+    right: 10px;
 }
