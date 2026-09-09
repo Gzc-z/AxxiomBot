@@ -9,7 +9,8 @@
         <!-- Favicon-->
         <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
         <!-- Core theme CSS (includes Bootstrap)-->
-        <link href="css/styles.css" rel="stylesheet" />
+        <link href="./css/styles.css" rel="stylesheet" />
+        <link type="" href="./js/scripts.js">
     </head>
     <body>
         <!-- Responsive navbar-->
@@ -60,8 +61,13 @@
                     <a href="#" class="btn btn-secondary">come see my patreon</a>
                 </div>
             </div>
-            <div>
+            <div class="hero-carousel">
+                <img src="./assets/imagetest.jpg" class="active" alt="image test">
                 <img src="./assets/imagetest.jpg" alt="image test">
+                <img src="./assets/imagetest.jpg" alt="image test">
+
+                <button class="carousel-btn prev" onclick="prevImage()">&#10094;</button>
+                <button class="carousel-btn next" onclick="nextImage()">&#10095;</button>
             </div>
         </section>
         <!-- Content section-->
