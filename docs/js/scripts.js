@@ -57,3 +57,32 @@ function prevImage() {
     );
 }
 
+
+const cmds = [
+  { name: "/axx", description: "IA simples do axxiom" },
+  { name: "/pts", description: "sistema de pontos do axxiom", info: "(desabilitado temporariamente)" },
+];
+const funcs = [
+    { name: ""},
+    { name: ""},
+];
+
+const cmddiv = document.querySelector('.cmds');
+cmds.forEach(cmd => {
+    const p = document.createElement("p");
+    if (cmd.info) {
+        p.innerHTML = `${cmd.name} - <small>${cmd.info}</small>\n${cmd.description}`;
+    }
+    else {
+        p.innerHTML = `${cmd.name}\n${cmd.description}`;
+    }
+    cmddiv.appendChild(p);
+});
+
+
+const funcdiv = document.querySelector('.funcs');
+funcs.forEach(func => {
+    const p = document.createElement("p");
+    p.innerHTML = `${func.name}`;
+    funcdiv.appendChild(p);
+});

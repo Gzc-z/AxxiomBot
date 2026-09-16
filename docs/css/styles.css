@@ -11292,3 +11292,17 @@ p {
     width: 100%;
     height: auto;
 }
+
+.cmds { margin-bottom: 1.4rem; }
+.cmds p{
+    font-size: 1rem;
+    font-weight: 400;
+    margin: 0;
+    margin-bottom: .8rem;
+    white-space: pre-line;
+    background-color: #e2e8f00c;
+    padding: .3rem;
+    small {
+        font-size: .69rem;
+    }
+}
