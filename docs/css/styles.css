@@ -62,7 +62,7 @@
   --bs-body-font-weight: 400;
   --bs-body-line-height: 1.5;
   --bs-body-color: #fff;
-  --bs-body-bg: #212529;
+  --bs-body-bg: #1f2426;
   --bs-border-width: 1px;
   --bs-border-style: solid;
   --bs-border-color: #dee2e6;
@@ -10905,6 +10905,7 @@ footer {
     align-items: center;
 
     padding: 4rem 4rem !important;
+    padding-bottom: 2rem !important;
     gap: 1rem;
 }
 
@@ -11238,7 +11239,7 @@ p {
 
     flex: 1;
     max-width: 50%;
-    width: 40%;
+    width: 39%;
     max-height: 300px;
     white-space: wrap;
     overflow-wrap: break-word;
@@ -11247,7 +11248,7 @@ p {
     margin-right: calc(var(--bs-gutter-x) * 5);
     margin-left: calc(var(--bs-gutter-x) * 2);
     margin-top: var(--bs-gutter-y);
-    padding: 1.9em;
+    padding: 1.2em;
     padding-bottom: 0;
 
     display: flex;
@@ -11256,6 +11257,10 @@ p {
     /* border: 1px solid #e2e8f014; */
     border-radius: 10px;
     background-color: #e2e8f00c;
+
+    h4 {
+        margin-bottom: 0;
+    }
 }
 
 .aligns {
@@ -11291,18 +11296,46 @@ p {
     display: block;
     width: 100%;
     height: auto;
+    /* background: #0f0; */
 }
 
-.cmds { margin-bottom: 1.4rem; }
+.cmds {
+    margin-top: .3rem;
+    margin-bottom: .5rem;
+}
 .cmds p{
+    width: 100%;
+    margin: 0;
+    margin-bottom: .6rem;
+    border-radius: 5px;
+
     font-size: 1rem;
     font-weight: 400;
-    margin: 0;
-    margin-bottom: .8rem;
+
     white-space: pre-line;
     background-color: #e2e8f00c;
-    padding: .3rem;
+    padding: .4rem;
     small {
         font-size: .69rem;
     }
+}
+
+.funcs {
+    display: flex;
+    /* flex-direction: column; */
+    gap: 1rem;
+    width: 100%;
+    margin-bottom: 1.4rem;
+    flex-wrap: wrap;
+}
+
+.funcs p {
+    width: auto;
+    padding: .2rem .4rem;
+    margin: 0;
+    border-radius: 5px;
+
+    color: #000;
+    font-size: .95rem !important;
+    font-weight: 600;
 }

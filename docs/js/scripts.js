@@ -63,8 +63,8 @@ const cmds = [
   { name: "/pts", description: "sistema de pontos do axxiom", info: "(desabilitado temporariamente)" },
 ];
 const funcs = [
-    { name: ""},
-    { name: ""},
+    { name: "IA", bg: "#6ae8e8" },
+    { name: "Sistema de pontuação", bg: "#e2e8f0" },
 ];
 
 const cmddiv = document.querySelector('.cmds');
@@ -84,5 +84,6 @@ const funcdiv = document.querySelector('.funcs');
 funcs.forEach(func => {
     const p = document.createElement("p");
     p.innerHTML = `${func.name}`;
+    p.style.backgroundColor = func.bg;
     funcdiv.appendChild(p);
 });
