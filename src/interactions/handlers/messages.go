@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	r2 "math/rand/v2"
 	"net"
 	"net/http"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -27,36 +27,23 @@ type PingMine struct {
 	Time   time.Duration
 }
 
-type Context struct {
+type Order struct {
 	s          *discordgo.Session
 	m          *discordgo.MessageCreate
 	args       []string
 	argsLength int
 }
 
-type Script struct {
-	Alias []string
-	Func  func(*Context)
-}
-
-var BuiltInScripts = map[string]Script{
-	"timer":   {Func: Timer},
-	"members": {Func: Members},
-	// "color":   {Func: RandomColor}, idk what i can do here
-	// "calc":    {Func: Calc}, // temporary disabled to verify security
-	"catfact": {Func: CatFacts},
-	"random":  {Func: Random},
-	"mine":    {Func: Mine},
-	"help":    {Func: Help},
-}
-
-// this would call API -> external scripts
-// var ExtScript = map[string]API{}
-
-func (src *Script) mkalias(alias ...string) {
-	for _, v := range alias {
-		src.Alias = append(src.Alias, v)
-	}
+var BuiltInScripts = map[string]func(*Order){
+	"timer":   Timer,
+	"members": Members,
+	// "color":   Func: RandomColor, idk what i can do here
+	"calc":    Calc,
+	"catfact": CatFacts,
+	"random":  Random,
+	"ping":    Mine,
+	"help":    Help,
+	"apostar": Apostar,
 }
 
 // resolve
@@ -67,36 +54,36 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	} else if isImage(s, m) {
 		return
-	}
-
-	roles := strings.Split(config.GetGuildID(), ",")
-	if !slices.Contains(roles, m.GuildID) {
+	} else if m.Content[0] != byte(prefix[0]) {
 		return
 	}
+
+	// roles := strings.Split(config.GetGuildID(), ",")
+	// if !slices.Contains(roles, m.GuildID) {
+	// 	return
+	// }
 
 	args := strings.Fields(strings.TrimPrefix(m.Content, prefix))
 	if len(args) == 0 {
 		return
 	}
 
-	if m.Content[0] != byte(prefix[0]) {
-		return
-	}
-
-	s.ChannelTyping(m.ChannelID)
-	cmd, ok := BuiltInScripts[args[0]]
-	if ok {
-		cmd.Func(&Context{
+	cmd, exist := BuiltInScripts[args[0]]
+	if exist {
+		s.ChannelTyping(m.ChannelID)
+		ctx := &Order{
 			s:          s,
 			m:          m,
 			args:       args,
 			argsLength: len(args),
-		})
-	} else {
-		// command not found
+		}
+		cmd(ctx)
+		return
 	}
+	fmt.Printf("%s from: %s on: %v\n", args, m.Author, m.GuildID)
 
 	// other default additional commands
+	s.ChannelTyping(m.ChannelID)
 	switch args[0] {
 	case "ping":
 		s.ChannelMessageSendReply(m.ChannelID, "pong", m.Reference())
@@ -105,6 +92,15 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSendReply(m.ChannelID, time, m.Reference())
 	case "me":
 		usr, _ := s.User(m.Author.ID)
+		if len(args) == 2 {
+			var err error
+			usr, err = s.User(args[1])
+			if err != nil {
+				s.ChannelMessageSendReply(m.ChannelID, "error: usuário não encontrado", m.Reference())
+				return
+			}
+		}
+
 		s.ChannelMessageSendReply(m.ChannelID, "## you:", m.Reference())
 		response := ui.UserResponse(usr)
 		s.ChannelMessageSendComplex(m.ChannelID, response)
@@ -138,7 +134,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 }
 
-func Help(ctx *Context) {
+func Help(ctx *Order) {
 	s := ctx.s
 	m := ctx.m
 	s.ChannelMessageSendReply(m.ChannelID, "## commands available: ", m.Reference())
@@ -152,7 +148,30 @@ func Help(ctx *Context) {
 	// s.ChannelMessageSend(m.ChannelID, txtc)
 }
 
-func Timer(ctx *Context) {
+func Apostar(ctx *Order) {
+	s := ctx.s
+	m := ctx.m
+	args := ctx.args
+
+	if len(args) != 2 {
+		s.ChannelMessageSendReply(m.ChannelID, "use **apostar <aposta>**", m.Reference())
+		return
+	}
+	aposta := args[1]
+	r := rand.Float32()
+	if r > 0.58 {
+		r += 1
+	}
+	apost, _ := strconv.ParseFloat(aposta, 8)
+	calc := float32(apost) * r
+	if float32(apost) > calc {
+		s.ChannelMessageSendReply(m.ChannelID, fmt.Sprintf("Você apostou %v, e perdeu kkkk", apost), m.Reference())
+		return
+	}
+	s.ChannelMessageSendReply(m.ChannelID, fmt.Sprintf("Você apostou %v, e ganhou %.2f", apost, calc), m.Reference())
+}
+
+func Timer(ctx *Order) {
 	s := ctx.s
 	m := ctx.m
 	args := ctx.args
@@ -173,7 +192,7 @@ func Timer(ctx *Context) {
 	s.ChannelMessageSendReply(m.ChannelID, "O tempo acabou", m.Reference())
 }
 
-func Members(ctx *Context) {
+func Members(ctx *Order) {
 	members, _ := ctx.s.GuildMembers(ctx.m.GuildID, "", 100)
 	ctx.s.ChannelMessageSendReply(ctx.m.ChannelID, "## Membros:\n`", ctx.m.Reference())
 	if len(members) > 10 {
@@ -190,7 +209,7 @@ var fact struct {
 	Length int    `json:"length"`
 }
 
-func CatFacts(ctx *Context) {
+func CatFacts(ctx *Order) {
 	r, err := http.Get("https://catfact.ninja" + "/fact")
 	if err != nil {
 		log.Println(err)
@@ -205,11 +224,11 @@ func CatFacts(ctx *Context) {
 	ctx.s.ChannelMessageSendReply(ctx.m.ChannelID, fact.Fact, ctx.m.Reference())
 }
 
-func RandomColor(ctx *Context) {
+func RandomColor(ctx *Order) {
 	ctx.s.ChannelMessageSendReply(ctx.m.ChannelID, strconv.Itoa(rand.Intn(0xffffff)), ctx.m.Reference())
 }
 
-func Calc(ctx *Context) {
+func Calc(ctx *Order) {
 	// ×÷π√∆£^✓%
 	m := ctx.m
 	if len(ctx.args) == 1 {
@@ -241,7 +260,7 @@ func Calc(ctx *Context) {
 	ctx.s.ChannelMessageSendReply(m.ChannelID, fmt.Sprint(result), m.Reference())
 }
 
-func Random(ctx *Context) {
+func Random(ctx *Order) {
 	args := ctx.args
 	m := ctx.m
 	s := ctx.s
@@ -250,17 +269,21 @@ func Random(ctx *Context) {
 		s.ChannelMessageSendReply(m.ChannelID, fmt.Sprint(r), m.Reference())
 		return
 	}
-
-	num, err := strconv.Atoi(args[1])
-	if err != nil {
-		s.ChannelMessageSendReply(m.ChannelID, "error: numero inválido", m.Reference())
+	if len(args) != 2 {
+		s.ChannelMessageSendReply(m.ChannelID, "numero inválido", m.Reference())
 		return
 	}
-	r := rand.Intn(num)
+	num, err := strconv.ParseUint(args[1], 10, 64)
+	if err != nil || num < 1 || num > ^uint64(0) {
+		s.ChannelMessageSendReply(m.ChannelID, "numero fora de alcance", m.Reference())
+		return
+	}
+
+	r := r2.Uint64N(num)
 	s.ChannelMessageSendReply(m.ChannelID, fmt.Sprint(r), m.Reference())
 }
 
-func Mine(ctx *Context) {
+func Mine(ctx *Order) {
 	m := ctx.m
 	s := ctx.s
 
