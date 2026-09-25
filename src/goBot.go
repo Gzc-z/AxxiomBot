@@ -66,6 +66,7 @@ func (bot *Bot) run() {
 	log.Printf("Logged in as: %v#%v", userBot.Username, userBot.Discriminator)
 }
 
+// TODO: scheduled events
 func (bot Bot) AddSessionEvents() {
 	ds := bot.Session
 	handlers := []any{

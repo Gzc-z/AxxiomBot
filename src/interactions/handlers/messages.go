@@ -8,6 +8,7 @@ import (
 	r2 "math/rand/v2"
 	"net"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -58,10 +59,10 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	// roles := strings.Split(config.GetGuildID(), ",")
-	// if !slices.Contains(roles, m.GuildID) {
-	// 	return
-	// }
+	roles := strings.Split(config.GetGuildID(), ",")
+	if !slices.Contains(roles, m.GuildID) {
+		return
+	}
 
 	args := strings.Fields(strings.TrimPrefix(m.Content, prefix))
 	if len(args) == 0 {

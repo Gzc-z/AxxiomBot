@@ -82,7 +82,7 @@ func GetAppID() string {
 	return cfg.Discord.AppID
 }
 
-func GetAI() string {
+func GetAIKey() string {
 	cfg := load()
 	return cfg.AI.AI_TOKEN
 }
