@@ -21,7 +21,7 @@ var AIinstance = openrouter.New(
 			Strategy: "backoff",
 			Backoff: &retry.BackoffStrategy{
 				InitialInterval: 1,
-				MaxInterval:     50,
+				MaxInterval:     30,
 				Exponent:        1.1,
 				MaxElapsedTime:  100,
 			},
@@ -33,14 +33,9 @@ var AIinstance = openrouter.New(
 
 func Axx(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	data := i.ApplicationCommandData()
-	message := data.Options[0].StringValue()
+	message := data.Options[0].StringValue() // option 0 from options of command
 	if len(message) > 200 {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "mensagem muito longa",
-			},
-		})
+		s.ChannelMessageSend(i.ChannelID, "mensagem muito grande")
 		return fmt.Errorf("message too long")
 	}
 	s.ChannelMessageSend(i.ChannelID, fmt.Sprintf("`%s`", message))
@@ -52,15 +47,17 @@ func Axx(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	)
 	defer cancel()
 
+	userMessage := &components.ChatUserMessage{
+		Role: "user",
+		Content: components.ChatUserMessageContent{
+			Str: openrouter.Pointer(message),
+		},
+	}
+
 	res, err := AIinstance.Chat.Send(ctx, components.ChatRequest{
 		Model: openrouter.Pointer("@preset/default"),
 		Messages: []components.ChatMessages{{
-			ChatUserMessage: &components.ChatUserMessage{
-				Role: "user",
-				Content: components.ChatUserMessageContent{
-					Str: openrouter.Pointer(message),
-				},
-			},
+			ChatUserMessage: userMessage,
 		}},
 	}, components.MetadataLevelEnabled.ToPointer())
 	if err != nil {
@@ -73,7 +70,6 @@ func Axx(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 		s.ChannelMessageSend(i.ChannelID, "erro ao gerar resposta\nerro: 500")
 		return fmt.Errorf("error getting response")
 	}
-	fmt.Printf("%#v\n", resp)
 	s.ChannelMessageSend(i.ChannelID, *resp.Str)
 	return nil
 }

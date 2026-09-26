@@ -85,7 +85,7 @@ func (bot *Bot) Close() {
 
 	guilds := listGuilds(ds)
 	for _, guild := range guilds {
-		bot.commandDelete(guild)
+		go bot.commandDelete(guild)
 	}
 
 	// delete global
@@ -102,10 +102,7 @@ func (bot Bot) commandCreate(s *discordgo.Session, r *discordgo.Ready) {
 	guilds := listGuilds(s)
 	for _, guild := range guilds {
 		for _, v := range interactions.Commands {
-			_, err := s.ApplicationCommandCreate(s.State.User.ID, guild.ID, v)
-			if err != nil {
-				log.Println("Cannot create '%v' err: %v\n", v.Name, err)
-			}
+			go s.ApplicationCommandCreate(s.State.User.ID, guild.ID, v)
 			fmt.Printf("/%s created\n", v.Name)
 		}
 	}
