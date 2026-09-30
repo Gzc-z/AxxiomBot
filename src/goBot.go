@@ -24,7 +24,7 @@ type Bot struct {
 
 func NewBot() *Bot {
 	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("Error loading .env file", err)
 	}
 
 	token, exist := os.LookupEnv("DISCORD_BOT_TOKEN")

@@ -38,7 +38,7 @@ func load() *Config {
 	once.Do(func() {
 		err := godotenv.Load()
 		if err != nil {
-			log.Fatal("Error loading .env file")
+			log.Fatal("Error loading .env file\n", err)
 		}
 
 		cfg = &Config{
