@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"axxiom/src/config"
+	"axxiom/internal/config"
 
 	openrouter "github.com/OpenRouterTeam/go-sdk"
 	"github.com/OpenRouterTeam/go-sdk/models/components"

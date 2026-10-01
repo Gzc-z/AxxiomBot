@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"axxiom/src/config"
-	"axxiom/src/interactions"
-	ui "axxiom/src/interactions/texts"
+	"axxiom/internal/config"
+	"axxiom/internal/interactions"
+	ui "axxiom/internal/interactions/texts"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/expr-lang/expr"
