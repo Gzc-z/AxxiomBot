@@ -1,4 +1,4 @@
-GOPATH = src/cmd/bot
+GOPATH = cmd/bot
 RUN = go run $(GOPATH)/main.go $(filter-out $@,$(MAKECMDGOALS))
 
 run:

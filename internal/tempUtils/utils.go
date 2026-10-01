@@ -7,7 +7,7 @@ import (
 	"os"
 	"strconv"
 
-	"axxiom/src/interactions"
+	"axxiom/internal/interactions"
 
 	"github.com/bwmarrin/discordgo"
 )
