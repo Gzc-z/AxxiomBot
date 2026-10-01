@@ -8,9 +8,9 @@ import (
 	"slices"
 	"strings"
 
-	"axxiom/src/config"
-	"axxiom/src/interactions"
-	"axxiom/src/interactions/handlers"
+	"axxiom/internal/config"
+	"axxiom/internal/interactions"
+	"axxiom/internal/interactions/handlers"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
