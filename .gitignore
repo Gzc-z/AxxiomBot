@@ -10,3 +10,4 @@ bin
 
 # data
 src/data/groupTags.json
+internal/interactions/private/developer-prompt.txt
