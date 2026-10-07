@@ -24,12 +24,12 @@ type Bot struct {
 
 func NewBot() *Bot {
 	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file", err)
+		log.Fatal("Error loading .env file", err.Error())
 	}
 
 	token, exist := os.LookupEnv("DISCORD_BOT_TOKEN")
 	if !exist {
-		log.Fatal("Error loading .env file")
+		log.Fatal("TOKEN environment variable is not set")
 	}
 
 	sess, err := discordgo.New("Bot " + token)
