@@ -4,7 +4,6 @@ package bot
 import (
 	"fmt"
 	"log"
-	"os"
 	"slices"
 	"strings"
 
@@ -20,36 +19,29 @@ type Bot struct {
 	Session *discordgo.Session
 	GuildID string
 	AppID   string
+	Config  config.Config
 }
 
-func NewBot() *Bot {
+func NewBot(cfg config.Config) *Bot {
 	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file", err.Error())
+		log.Fatal(err.Error())
 	}
 
-	token, exist := os.LookupEnv("DISCORD_BOT_TOKEN")
-	if !exist {
-		log.Fatal("TOKEN environment variable is not set")
-	}
-
-	sess, err := discordgo.New("Bot " + token)
+	session, err := discordgo.New("Bot " + cfg.Discord.GuildID)
 	if err != nil {
 		log.Fatal("something's wrong, can't create discord bot")
-		os.Exit(1)
+		panic(1)
 	}
 
 	return &Bot{
-		Session: sess,
-		GuildID: config.GetGuildID(),
-		AppID:   config.GetAppID(),
+		Session: session,
+		GuildID: cfg.Discord.GuildID,
+		AppID:   cfg.Discord.AppID,
+		Config:  cfg,
 	}
 }
 
-func (bot *Bot) Start() {
-	go bot.run()
-}
-
-func (bot *Bot) run() {
+func (bot *Bot) Start(cfg *config.Config) {
 	ds := bot.Session
 	ds.Identify.Intents |= discordgo.IntentMessageContent
 	ds.Identify.Intents |= discordgo.IntentGuilds
@@ -146,13 +138,14 @@ func onGuildCreate(s *discordgo.Session, g *discordgo.GuildCreate) {
 	}
 
 	for _, channel := range g.Channels {
-		if channel.Type == discordgo.ChannelTypeGuildText {
-			_, err := s.ChannelMessageSend(channel.ID,
-				"Olá! Serei seu bot de utilidades\n`.help`",
-			)
-			if err == nil {
-				break
-			}
+		if channel.Type != discordgo.ChannelTypeGuildText {
+			return
+		}
+		_, err := s.ChannelMessageSend(channel.ID,
+			"Olá! Serei seu bot de utilidades\n`digite .help`",
+		)
+		if err == nil {
+			break
 		}
 	}
 }

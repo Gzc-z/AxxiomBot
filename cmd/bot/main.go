@@ -1,19 +1,14 @@
 package main
 
 import (
-	"os"
-	"os/signal"
-
 	bot "axxiom/internal"
+	"axxiom/internal/config"
 )
 
 func main() {
-	discordBot := bot.NewBot()
+	cfg := config.Load()
+	discordBot := bot.NewBot(cfg)
 
-	discordBot.Start()
+	discordBot.Start(&cfg)
 	defer discordBot.Close()
-
-	make := make(chan os.Signal, 1)
-	signal.Notify(make, os.Interrupt)
-	<-make
 }

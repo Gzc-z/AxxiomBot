@@ -2,26 +2,19 @@ package bot
 
 import (
 	"fmt"
-	"os"
-	"os/signal"
+	"strings"
 	"testing"
 
-	"github.com/bwmarrin/discordgo"
+	"axxiom/internal/config"
 )
 
 func TestPing(t *testing.T) {
-	ping := NewBot()
-	ping.Start()
-	defer ping.Close()
+	cfg := config.Load()
+	bot := NewBot(cfg)
 
-	fmt.Println("created")
-	s := ping.Session
-	s.Identify.Intents |= discordgo.IntentGuilds
-	s.Identify.Intents |= discordgo.IntentGuildMembers
-	s.Identify.Intents |= discordgo.IntentGuildMessages
-	s.Identify.Intents |= discordgo.IntentDirectMessages
+	fmt.Println("logged")
+	s := bot.Session
 
-	make := make(chan os.Signal, 1)
-	signal.Notify(make, os.Interrupt)
-	<-make
+	guilds := strings.Split(config.GetGuildID(), ",")
+	s.ChannelMessageSend(guilds[0], "ping")
 }
