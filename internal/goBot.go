@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"axxiom/internal/config"
+	"axxiom/internal/handlers"
 	"axxiom/internal/interactions"
-	"axxiom/internal/interactions/handlers"
 
 	"github.com/bwmarrin/discordgo"
 )
