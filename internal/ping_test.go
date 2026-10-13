@@ -2,19 +2,22 @@ package bot
 
 import (
 	"fmt"
-	"strings"
+	"os"
 	"testing"
 
 	"axxiom/internal/config"
 )
 
+// Integration test ping message
 func TestPing(t *testing.T) {
 	cfg := config.Load()
-	bot := NewBot(cfg)
+	bot := NewBot(cfg.Discord)
+	config.SetDeps(cfg) // improve injection of dependencies... pls
 
 	fmt.Println("logged")
 	s := bot.Session
 
-	guilds := strings.Split(config.GetGuildID(), ",")
-	s.ChannelMessageSend(guilds[0], "ping")
+	channel := os.Getenv("TEST_CHANNELID")
+	_, err := s.ChannelMessageSend(channel, "ping")
+	t.Log(err)
 }
