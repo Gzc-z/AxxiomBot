@@ -43,7 +43,6 @@ func interactionCreateErrors(handler funcICHandler, s *discordgo.Session, i *dis
 	}
 }
 
-// TODO: implement fallback response
 func InteractionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	switch i.Type {
 	case discordgo.InteractionApplicationCommand:

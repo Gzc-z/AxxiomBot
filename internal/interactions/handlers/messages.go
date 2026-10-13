@@ -304,10 +304,10 @@ func Mine(ctx *Order) {
 }
 
 func serverPing(s *discordgo.Session, m *discordgo.MessageCreate) PingMine {
-	host := config.GetMinecraft()
+	server := config.MinecraftAddress()
 	start := time.Now()
 
-	conn, err := net.DialTimeout("tcp", host.IP+":"+host.PORT, time.Second*5)
+	conn, err := net.DialTimeout("tcp", server, time.Second*5)
 	if err != nil {
 		log.Println(err)
 		return PingMine{}

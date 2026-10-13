@@ -4,7 +4,10 @@ package config
 import (
 	"fmt"
 	"log"
+	"net"
 	"os"
+	"path/filepath"
+	"runtime"
 	"sync"
 
 	"github.com/joho/godotenv"
@@ -16,9 +19,8 @@ var (
 )
 
 type Minecraft struct {
-	IP    string
-	PORT  string
-	Forge string
+	IP   string
+	PORT string
 }
 type Discord struct {
 	GuildID string
@@ -36,10 +38,17 @@ type Config struct {
 }
 
 func Load() Config {
-	err := godotenv.Load()
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		log.Println("Failed to get caller")
+	}
+
+	dir := filepath.Dir(filename)
+	envPath := filepath.Join(dir, "../../.env")
+
+	err := godotenv.Load(envPath)
 	if err != nil {
-		log.Println(os.Getwd())
-		log.Fatal("Error loading .env file\n", err)
+		log.Println(err)
 	}
 
 	cfg := Config{
@@ -68,18 +77,26 @@ func getEnv(envVar string) string {
 	return key
 }
 
-func GetGuildID() string {
-	return cfg.Discord.GuildID
+func SetDeps(deps Config) {
+	cfg = &deps
 }
 
-func GetMinecraft() Minecraft {
+func MinecraftServer() Minecraft {
 	return cfg.Minecraft
+}
+
+func MinecraftAddress() string {
+	return net.JoinHostPort(cfg.Minecraft.IP, cfg.Minecraft.PORT)
+}
+
+func GetGuildID() string {
+	return cfg.Discord.GuildID
 }
 
 func GetAppID() string {
 	return cfg.Discord.AppID
 }
 
-func GetAIKey() string {
+func GetAIToken() string {
 	return cfg.AI.AI_TOKEN
 }

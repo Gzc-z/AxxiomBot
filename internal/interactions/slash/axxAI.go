@@ -11,27 +11,31 @@ import (
 
 	openrouter "github.com/OpenRouterTeam/go-sdk"
 	"github.com/OpenRouterTeam/go-sdk/models/components"
-	"github.com/OpenRouterTeam/go-sdk/optionalnullable"
 	"github.com/OpenRouterTeam/go-sdk/retry"
 	"github.com/bwmarrin/discordgo"
 )
 
-var retryConfig = retry.Config{
-	Strategy: "backoff",
-	Backoff: &retry.BackoffStrategy{
-		InitialInterval: 1,
-		MaxInterval:     30,
-		Exponent:        1.1,
-		MaxElapsedTime:  80,
-	},
-	RetryConnectionErrors: true,
-}
+var AIinstance *openrouter.OpenRouter
 
-var AIinstance = openrouter.New(
-	openrouter.WithRetryConfig(retryConfig),
-	openrouter.WithSecurity(config.GetAIKey()),
-	openrouter.WithTimeout(time.Second*20),
-)
+func getAIInstance() *openrouter.OpenRouter {
+	retryConfig := retry.Config{
+		Strategy: "backoff",
+		Backoff: &retry.BackoffStrategy{
+			InitialInterval: 1,
+			MaxInterval:     30,
+			Exponent:        1.1,
+			MaxElapsedTime:  80,
+		},
+		RetryConnectionErrors: true,
+	}
+
+	AIinstance = openrouter.New(
+		openrouter.WithRetryConfig(retryConfig),
+		openrouter.WithSecurity(config.GetAIToken()),
+		openrouter.WithTimeout(time.Second*20))
+
+	return AIinstance
+}
 
 type Message struct {
 	Content string
@@ -77,18 +81,10 @@ func Axx(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 			},
 		),
 	}
-	if len(historyMsgs) > 0 {
-		for _, msg := range historyMsgs {
-			content := components.CreateChatAssistantMessageContentStr(msg.Author + ":\n" + msg.Content)
-			messages = append(messages, components.CreateChatMessagesAssistant(
-				components.ChatAssistantMessage{
-					Role:    components.ChatAssistantMessageRoleAssistant,
-					Content: optionalnullable.From(&content),
-				},
-			))
-		}
-	}
 
+	if AIinstance == nil {
+		AIinstance = getAIInstance()
+	}
 	res, err := AIinstance.Chat.Send(
 		ctx,
 		components.ChatRequest{

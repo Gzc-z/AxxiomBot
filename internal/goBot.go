@@ -12,22 +12,20 @@ import (
 	"axxiom/internal/interactions/handlers"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/joho/godotenv"
 )
 
 type Bot struct {
 	Session *discordgo.Session
 	GuildID string
 	AppID   string
-	Config  config.Config
 }
 
-func NewBot(cfg config.Config) *Bot {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal(err.Error())
-	}
+type environments interface {
+	getEnvironments(cfg config.Config)
+}
 
-	session, err := discordgo.New("Bot " + cfg.Discord.GuildID)
+func NewBot(cfg config.Discord) *Bot {
+	session, err := discordgo.New("Bot " + cfg.Token)
 	if err != nil {
 		log.Fatal("something's wrong, can't create discord bot")
 		panic(1)
@@ -35,17 +33,17 @@ func NewBot(cfg config.Config) *Bot {
 
 	return &Bot{
 		Session: session,
-		GuildID: cfg.Discord.GuildID,
-		AppID:   cfg.Discord.AppID,
-		Config:  cfg,
+		GuildID: cfg.GuildID,
+		AppID:   cfg.AppID,
 	}
 }
 
-func (bot *Bot) Start(cfg *config.Config) {
+func (bot *Bot) Start(cfg config.Config) {
 	ds := bot.Session
 	ds.Identify.Intents |= discordgo.IntentMessageContent
 	ds.Identify.Intents |= discordgo.IntentGuilds
 	ds.Identify.Intents |= discordgo.IntentGuildMembers
+	config.SetDeps(cfg)
 	bot.AddSessionEvents()
 
 	if err := ds.Open(); err != nil {
@@ -71,11 +69,11 @@ func (bot Bot) AddSessionEvents() {
 	go ds.AddHandler(bot.commandCreate)
 }
 
-func (bot *Bot) Close() {
+func (bot Bot) Close() {
 	ds := bot.Session
 	defer ds.Close()
 
-	guilds := listGuilds(ds)
+	guilds := bot.listGuilds(ds)
 	for _, guild := range guilds {
 		go bot.commandDelete(guild)
 	}
@@ -91,7 +89,7 @@ func (bot *Bot) Close() {
 }
 
 func (bot Bot) commandCreate(s *discordgo.Session, r *discordgo.Ready) {
-	guilds := listGuilds(s)
+	guilds := bot.listGuilds(s)
 	for _, guild := range guilds {
 		for _, v := range interactions.Commands {
 			go s.ApplicationCommandCreate(s.State.User.ID, guild.ID, v)
@@ -115,14 +113,14 @@ func (bot Bot) commandDelete(guild *discordgo.UserGuild) {
 	}
 }
 
-func listGuilds(s *discordgo.Session) []*discordgo.UserGuild {
+func (bot Bot) listGuilds(s *discordgo.Session) []*discordgo.UserGuild {
 	guilds, err := s.UserGuilds(100, "", "", false)
 	if err != nil {
 		log.Panicf("Cannot get guilds: %v", err)
 	}
 
 	var allowedGuilds []*discordgo.UserGuild
-	roles := strings.Split(config.GetGuildID(), ",")
+	roles := strings.Split(bot.GuildID, ",")
 
 	for _, guild := range guilds {
 		if slices.Contains(roles, guild.ID) {
