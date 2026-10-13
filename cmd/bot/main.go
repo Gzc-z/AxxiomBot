@@ -7,8 +7,8 @@ import (
 
 func main() {
 	cfg := config.Load()
-	discordBot := bot.NewBot(cfg.Discord)
 
-	discordBot.Start(cfg)
+	discordBot := bot.NewBot(cfg)
+	discordBot.Start()
 	defer discordBot.Close()
 }

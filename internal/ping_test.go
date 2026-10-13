@@ -11,8 +11,7 @@ import (
 // Integration test ping message
 func TestPing(t *testing.T) {
 	cfg := config.Load()
-	bot := NewBot(cfg.Discord)
-	config.SetDeps(cfg) // improve injection of dependencies... pls
+	bot := NewBot(cfg)
 
 	fmt.Println("logged")
 	s := bot.Session

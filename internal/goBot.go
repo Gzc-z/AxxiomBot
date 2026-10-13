@@ -24,26 +24,27 @@ type environments interface {
 	getEnvironments(cfg config.Config)
 }
 
-func NewBot(cfg config.Discord) *Bot {
-	session, err := discordgo.New("Bot " + cfg.Token)
+func NewBot(cfg config.Config) *Bot {
+	session, err := discordgo.New("Bot " + cfg.Discord.Token)
 	if err != nil {
-		log.Fatal("something's wrong, can't create discord bot")
+		log.Fatal("something's wrong, can't create bot")
 		panic(1)
 	}
 
+	config.SetDeps(cfg)
+
 	return &Bot{
 		Session: session,
-		GuildID: cfg.GuildID,
-		AppID:   cfg.AppID,
+		GuildID: cfg.Discord.GuildID,
+		AppID:   cfg.Discord.AppID,
 	}
 }
 
-func (bot *Bot) Start(cfg config.Config) {
+func (bot *Bot) Start() {
 	ds := bot.Session
 	ds.Identify.Intents |= discordgo.IntentMessageContent
 	ds.Identify.Intents |= discordgo.IntentGuilds
 	ds.Identify.Intents |= discordgo.IntentGuildMembers
-	config.SetDeps(cfg)
 	bot.AddSessionEvents()
 
 	if err := ds.Open(); err != nil {
