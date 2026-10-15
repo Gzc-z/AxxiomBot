@@ -55,6 +55,7 @@ func (bot *Bot) Start() {
 
 	userBot, _ := ds.User("@me")
 	log.Printf("Logged in as: %v#%v", userBot.Username, userBot.Discriminator)
+	select {}
 }
 
 // TODO: scheduled events

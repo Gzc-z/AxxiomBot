@@ -15,7 +15,10 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-var AIinstance *openrouter.OpenRouter
+var (
+	AIinstance *openrouter.OpenRouter
+	devPrompt  string
+)
 
 func getAIInstance() *openrouter.OpenRouter {
 	retryConfig := retry.Config{
@@ -85,7 +88,7 @@ func Axx(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 	if AIinstance == nil {
 		AIinstance = getAIInstance()
 	}
-	res, err := AIinstance.Chat.Send(
+	chatCompletion, err := AIinstance.Chat.Send(
 		ctx,
 		components.ChatRequest{
 			Model:    openrouter.Pointer("@preset/default"),
@@ -98,11 +101,17 @@ func Axx(s *discordgo.Session, i *discordgo.InteractionCreate) error {
 		return err
 	}
 
-	resp, ok := res.ChatResult.Choices[0].Message.Content.Get()
-	if !ok {
-		s.ChannelMessageSend(i.ChannelID, "erro ao gerar resposta\nerro: 500")
+	if len(chatCompletion.ChatResult.Choices) == 0 {
+		s.ChannelMessageSend(i.ChannelID, "A IA não conseguiu responder :(")
 		return fmt.Errorf("error getting response")
 	}
+
+	resp, ok := chatCompletion.ChatResult.Choices[0].Message.Content.Get()
+	if !ok || resp.Str == nil {
+		s.ChannelMessageSend(i.ChannelID, "erro ao gerar resposta")
+		return fmt.Errorf("error getting response")
+	}
+
 	s.ChannelMessageSend(i.ChannelID, *resp.Str)
 	return nil
 }
@@ -113,7 +122,6 @@ func (h *Message) addToHistory(m components.ChatMessages) {
 
 func getDevPrompt() (string, error) {
 	var loadErr error
-	var devPrompt string
 	once.Do(func() {
 		f, err := os.ReadFile(promptFile)
 		if err != nil {
