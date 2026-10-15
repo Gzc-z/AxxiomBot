@@ -72,7 +72,8 @@ func Load() Config {
 func getEnv(envVar string) string {
 	key, exist := os.LookupEnv(envVar)
 	if !exist {
-		return fmt.Sprintf("Error: %s does'n exist\n", envVar)
+		log.Println("Error: %s does'n exist\n")
+		return fmt.Sprintf(envVar)
 	}
 	return key
 }
