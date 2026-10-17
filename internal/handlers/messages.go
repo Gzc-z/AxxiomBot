@@ -71,7 +71,6 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	cmd, exist := BuiltInScripts[args[0]]
 	if exist {
-		s.ChannelTyping(m.ChannelID)
 		ctx := &Order{
 			s:          s,
 			m:          m,
@@ -124,6 +123,10 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSendReply(m.ChannelID, "wel come: "+usr.GlobalName, m.Reference())
 
 	case "banir", "ban":
+		if len(args) != 2 {
+			s.ChannelMessageSendReply(m.ChannelID, "use **.ban <usuário>**", m.Reference())
+			return
+		}
 		s.ChannelMessageSendReply(m.ChannelID, args[1]+" foi banido(a)", m.Reference())
 	case "axx", "axxiom", "Axxiom":
 		s.ChannelMessageSendReply(m.ChannelID, "Use /axx", m.Reference())
@@ -214,12 +217,14 @@ func CatFacts(ctx *Order) {
 	r, err := http.Get("https://catfact.ninja" + "/fact")
 	if err != nil {
 		log.Println(err)
+		return
 	}
 	defer r.Body.Close()
 
 	err = json.NewDecoder(r.Body).Decode(&fact)
 	if err != nil {
 		log.Println(err)
+		return
 	}
 
 	ctx.s.ChannelMessageSendReply(ctx.m.ChannelID, fact.Fact, ctx.m.Reference())
