@@ -10,5 +10,5 @@ func main() {
 
 	discordBot := bot.NewBot(cfg)
 	discordBot.Start()
-	defer discordBot.Close()
+	discordBot.Close()
 }
