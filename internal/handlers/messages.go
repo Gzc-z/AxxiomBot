@@ -47,7 +47,6 @@ var BuiltInScripts = map[string]func(*Order){
 	"apostar": Apostar,
 }
 
-// resolve
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.Bot {
 		return
@@ -63,7 +62,6 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if !slices.Contains(roles, m.GuildID) {
 		return
 	}
-
 	args := strings.Fields(strings.TrimPrefix(m.Content, prefix))
 	if len(args) == 0 {
 		return
@@ -166,7 +164,7 @@ func Apostar(ctx *Order) {
 	if r > 0.58 {
 		r += 1
 	}
-	apost, _ := strconv.ParseFloat(aposta, 8)
+	apost, _ := strconv.ParseFloat(aposta, 32)
 	calc := float32(apost) * r
 	if float32(apost) > calc {
 		s.ChannelMessageSendReply(m.ChannelID, fmt.Sprintf("Você apostou %v, e perdeu kkkk", apost), m.Reference())

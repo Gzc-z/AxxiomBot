@@ -58,7 +58,6 @@ func (bot *Bot) Start() {
 	select {}
 }
 
-// TODO: scheduled events
 func (bot Bot) AddSessionEvents() {
 	ds := bot.Session
 	handlers := []any{
@@ -141,7 +140,8 @@ func onGuildCreate(s *discordgo.Session, g *discordgo.GuildCreate) {
 		if channel.Type != discordgo.ChannelTypeGuildText {
 			return
 		}
-		_, err := s.ChannelMessageSend(channel.ID,
+		_, err := s.ChannelMessageSend(
+			channel.ID,
 			"Olá! Serei seu bot de utilidades\n`digite .help`",
 		)
 		if err == nil {
