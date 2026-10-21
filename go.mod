@@ -3,7 +3,7 @@ module axxiom
 go 1.27.0
 
 require (
-	github.com/OpenRouterTeam/go-sdk v0.7.159
+	github.com/OpenRouterTeam/go-sdk v0.9.65
 	github.com/bwmarrin/discordgo v0.29.0
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/expr-lang/expr v1.17.8
@@ -12,7 +12,7 @@ require (
 
 require (
 	github.com/gorilla/websocket v1.5.3 // indirect
-	github.com/spyzhov/ajson v0.8.0 // indirect
-	golang.org/x/crypto v0.54.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
+	github.com/spyzhov/ajson v0.9.6 // indirect
+	golang.org/x/crypto v0.58.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
 )
