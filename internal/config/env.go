@@ -28,7 +28,7 @@ type Discord struct {
 	Token   string
 }
 type AI struct {
-	AI_TOKEN string
+	AIToken string
 }
 
 type Config struct {
@@ -62,7 +62,7 @@ func Load() Config {
 			IP:   getEnv("MINECRAFT_SERVER_IP"),
 		},
 		AI: AI{
-			AI_TOKEN: getEnv("AI_TOKEN"),
+			AIToken: getEnv("AI_TOKEN"),
 		},
 	}
 
@@ -72,8 +72,8 @@ func Load() Config {
 func getEnv(envVar string) string {
 	key, exist := os.LookupEnv(envVar)
 	if !exist {
-		log.Println("Error: %s does'n exist\n")
-		return fmt.Sprintf(envVar)
+		log.Println("Error: %s does'n exist\n" + envVar)
+		return fmt.Sprint(envVar)
 	}
 	return key
 }
@@ -99,5 +99,5 @@ func GetAppID() string {
 }
 
 func GetAIToken() string {
-	return cfg.AI.AI_TOKEN
+	return cfg.AI.AIToken
 }
