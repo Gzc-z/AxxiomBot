@@ -1,8 +1,11 @@
+// TODO: improve ts logic
+
 package handlers
 
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"math/rand"
 	r2 "math/rand/v2"
@@ -52,9 +55,11 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	} else if m.Content == "" {
 		return
-	} else if isImage(s, m) {
-		return
 	} else if m.Content[0] != byte(prefix[0]) {
+		return
+	} else if isImage(m) {
+		return
+	} else if strings.Contains(m.Content, "@everyone") {
 		return
 	}
 
@@ -62,6 +67,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if !slices.Contains(roles, m.GuildID) {
 		return
 	}
+
 	args := strings.Fields(strings.TrimPrefix(m.Content, prefix))
 	if len(args) == 0 {
 		return
@@ -78,10 +84,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		cmd(ctx)
 		return
 	}
-	fmt.Printf("%s from: %s on: %v\n", args, m.Author, m.GuildID)
 
-	// other default additional commands
-	s.ChannelTyping(m.ChannelID)
 	switch args[0] {
 	case "ping":
 		s.ChannelMessageSendReply(m.ChannelID, "pong", m.Reference())
@@ -105,6 +108,10 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	case "garçom":
 		members, _ := s.GuildMembers(m.GuildID, "", 100)
+		if len(members) == 0 {
+			s.ChannelMessageSendReply(m.ChannelID, "não há membros no servidor", m.Reference())
+			return
+		}
 		user := members[rand.Intn(len(members))]
 		response := ui.MembersProfile(user)
 
@@ -126,13 +133,12 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			return
 		}
 		s.ChannelMessageSendReply(m.ChannelID, args[1]+" foi banido(a)", m.Reference())
-	case "axx", "axxiom", "Axxiom":
-		s.ChannelMessageSendReply(m.ChannelID, "Use /axx", m.Reference())
 	case "jogar":
-		if len(args) == 2 {
-			s.ChannelMessageSendReply(m.ChannelID, args[1]+" joga com o menino pô", m.Reference())
+		if len(args) != 2 {
+			s.ChannelMessageSendReply(m.ChannelID, "use **.jogar <usuário>**", m.Reference())
 			return
 		}
+		s.ChannelMessageSendReply(m.ChannelID, args[1]+" joga com o menino pô", m.Reference())
 	}
 }
 
@@ -206,25 +212,31 @@ func Members(ctx *Order) {
 	}
 }
 
-var fact struct {
+var catClient = &http.Client{Timeout: 5 * time.Second}
+
+type catFact struct {
 	Fact   string `json:"fact"`
 	Length int    `json:"length"`
 }
 
 func CatFacts(ctx *Order) {
-	r, err := http.Get("https://catfact.ninja" + "/fact")
+	r, err := http.Get("https://catfact.ninja/fact")
 	if err != nil {
-		log.Println(err)
+		log.Println("catfact request: ", err)
 		return
 	}
 	defer r.Body.Close()
 
-	err = json.NewDecoder(r.Body).Decode(&fact)
-	if err != nil {
-		log.Println(err)
+	if r.StatusCode != http.StatusOK {
+		log.Printf("catfact: unexpected status %d", r.StatusCode)
 		return
 	}
 
+	var fact catFact
+	if err := json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&fact); err != nil {
+		log.Println("catfact decode: ", err)
+		return
+	}
 	ctx.s.ChannelMessageSendReply(ctx.m.ChannelID, fact.Fact, ctx.m.Reference())
 }
 
@@ -240,8 +252,8 @@ func Calc(ctx *Order) {
 		return
 	}
 	expression := strings.Join(ctx.args[1:], " ")
-	expression = strings.Replace(expression, "×", "*", -1)
-	expression = strings.Replace(expression, "÷", "/", -1)
+	expression = strings.ReplaceAll(expression, "×", "*")
+	expression = strings.ReplaceAll(expression, "÷", "/")
 	if len(expression) > 100 {
 		fmt.Println("expression too long")
 		ctx.s.ChannelMessageSendReply(m.ChannelID, "error: calculo muuuito grande\n", m.Reference())
@@ -324,7 +336,7 @@ func serverPing(s *discordgo.Session, m *discordgo.MessageCreate) PingMine {
 	return p
 }
 
-func isImage(s *discordgo.Session, m *discordgo.MessageCreate) bool {
+func isImage(m *discordgo.MessageCreate) bool {
 	for _, a := range m.Attachments {
 		if a.ContentType != "" && strings.HasPrefix(a.ContentType, "image/") {
 			return true
