@@ -1,22 +1,26 @@
+// Package handlers
+//
+// handler interactions like create messages
+// and redirect to your own functionality
 package handlers
 
 import (
-	"fmt"
+	"log/slog"
+	"runtime/debug"
 
 	"axxiom/internal/interactions/slash"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-type funcICHandler func(*discordgo.Session, *discordgo.InteractionCreate) error
+type icHandler func(*discordgo.Session, *discordgo.InteractionCreate) error
 
 var (
-	// for on strings assigning to a func type
-	commandInteractions = map[string]funcICHandler{
+	commandInteractions = map[string]icHandler{
 		"pts": slash.PtsCommandResponse,
 		"axx": slash.Axx,
 	}
-	messageComponentInteractions = map[string]funcICHandler{
+	messageComponentInteractions = map[string]icHandler{
 		"ptsReturn":      slash.PtsCommandResponse,
 		"selectGroupTag": slash.PtsGroupTag,
 		"newGroupTag":    slash.PtsGroupTag,
@@ -26,7 +30,7 @@ var (
 		"rightPage":      slash.PtsGroupTag,
 		"leftPage":       slash.PtsGroupTag,
 	}
-	submitModalInteractions = map[string]funcICHandler{
+	submitModalInteractions = map[string]icHandler{
 		"submitNewGroupTag": slash.SubmitNewGrouptag,
 		"submitDelGroupTag": slash.DelGroupTag,
 		"submitNewTag":      slash.SubmitNewTag,
@@ -34,37 +38,54 @@ var (
 	}
 )
 
-// TODO: maybe use generics
-func interactionCreateErrors(handler funcICHandler, s *discordgo.Session, i *discordgo.InteractionCreate) {
-	err := handler(s, i)
-	// TODO: write errors in logs
-	if err != nil {
-		fmt.Println('\n', err)
+func InteractionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	var h icHandler
+	switch i.Type {
+	case discordgo.InteractionApplicationCommand:
+		h = commandInteractions[i.ApplicationCommandData().Name]
+	case discordgo.InteractionMessageComponent:
+		d := i.MessageComponentData()
+		key := d.CustomID
+		if key == "groupOptions" || len(d.Values) > 0 {
+			key = d.Values[0]
+		}
+		h = messageComponentInteractions[key]
+	case discordgo.InteractionModalSubmit:
+		h = submitModalInteractions[i.ModalSubmitData().CustomID]
+	}
+	if h != nil {
+		runWithRecover(h, s, i)
 	}
 }
 
-func InteractionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	switch i.Type {
-	case discordgo.InteractionApplicationCommand:
-		data := i.ApplicationCommandData()
-		if handler, ok := commandInteractions[data.Name]; ok {
-			go interactionCreateErrors(handler, s, i)
+func runWithRecover(h icHandler, s *discordgo.Session, i *discordgo.InteractionCreate) {
+	defer func() {
+		if err := recover(); err != nil {
+			slog.Error("handler panicked", "interaction", i.ID, "type", i.Type, "panic", err, "stack", string(debug.Stack()))
+			reply(s, i.Interaction)
 		}
-	case discordgo.InteractionMessageComponent:
-		data := i.MessageComponentData()
-		if data.CustomID == "groupOptions" {
-			if handler, ok := messageComponentInteractions[data.Values[0]]; ok {
-				go interactionCreateErrors(handler, s, i)
-			}
-			break
-		}
-		if handler, ok := messageComponentInteractions[data.CustomID]; ok {
-			go interactionCreateErrors(handler, s, i)
-		}
-	case discordgo.InteractionModalSubmit:
-		data := i.ModalSubmitData()
-		if handler, ok := submitModalInteractions[data.CustomID]; ok {
-			go interactionCreateErrors(handler, s, i)
-		}
+	}()
+	if err := h(s, i); err != nil {
+		slog.Error("handler failed", "interaction", i.ID, "type", i.Type, "err", err)
+		reply(s, i.Interaction)
+	}
+}
+
+func reply(s *discordgo.Session, in *discordgo.Interaction) {
+	const msg = "Algo deu errado. Por favor, tente novamente mais tarde."
+	err := s.InteractionRespond(in, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{Content: msg, Flags: discordgo.MessageFlagsEphemeral},
+	})
+	if err == nil {
+		return
+	}
+	// Followup message failed
+	_, ferr := s.FollowupMessageCreate(in, true, &discordgo.WebhookParams{
+		Content: msg,
+		Flags:   discordgo.MessageFlagsEphemeral,
+	})
+	if ferr != nil {
+		slog.Error("failed to notify user", "interaction", in.ID, "err", err, "followup_err", ferr)
 	}
 }
