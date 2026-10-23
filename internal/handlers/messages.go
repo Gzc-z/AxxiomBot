@@ -11,7 +11,6 @@ import (
 	r2 "math/rand/v2"
 	"net"
 	"net/http"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -63,10 +62,10 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	roles := strings.Split(config.GetGuildID(), ",")
-	if !slices.Contains(roles, m.GuildID) {
-		return
-	}
+	// roles := strings.Split(config.GetGuildID(), ",")
+	// if !slices.Contains(roles, m.GuildID) {
+	// 	return
+	// }
 
 	args := strings.Fields(strings.TrimPrefix(m.Content, prefix))
 	if len(args) == 0 {
@@ -102,9 +101,11 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 		}
 
-		s.ChannelMessageSendReply(m.ChannelID, "## you:", m.Reference())
 		response := ui.UserResponse(usr)
-		s.ChannelMessageSendComplex(m.ChannelID, response)
+		_, err := s.ChannelMessageSendComplex(m.ChannelID, response)
+		if err != nil {
+			log.Println("error sending message: ", err)
+		}
 
 	case "garçom":
 		members, _ := s.GuildMembers(m.GuildID, "", 100)
@@ -166,11 +167,19 @@ func Apostar(ctx *Order) {
 		return
 	}
 	aposta := args[1]
+	apost, err := strconv.ParseFloat(aposta, 32)
+	if apost <= 0 {
+		s.ChannelMessageSendReply(m.ChannelID, "error: aposta inválida", m.Reference())
+		return
+	}
 	r := rand.Float32()
 	if r > 0.58 {
 		r += 1
 	}
-	apost, _ := strconv.ParseFloat(aposta, 32)
+	if err != nil {
+		s.ChannelMessageSendReply(m.ChannelID, "error: numero inválido", m.Reference())
+		return
+	}
 	calc := float32(apost) * r
 	if float32(apost) > calc {
 		s.ChannelMessageSendReply(m.ChannelID, fmt.Sprintf("Você apostou %v, e perdeu kkkk", apost), m.Reference())
