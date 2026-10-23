@@ -1,11 +1,12 @@
+//go:build integration
+
 package bot
 
 import (
+	"axxiom/internal/config"
 	"fmt"
 	"os"
 	"testing"
-
-	"axxiom/internal/config"
 )
 
 // Integration test ping message
