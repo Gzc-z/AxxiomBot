@@ -1,5 +1,8 @@
 infos/
 data/
-.env
 .git/
 .gitignore
+
+.env
+.env.*
+!.env.example

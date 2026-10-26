@@ -1,0 +1,20 @@
+name: axxiom
+services:
+  axxiom:
+    image: axxiom:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: axxiom
+    working_dir: /axxiom
+
+    env_file:
+      - .env
+
+    networks:
+      - appnet
+    command: axxiom
+
+
+networks:
+  appnet:

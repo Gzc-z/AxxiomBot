@@ -3,6 +3,7 @@ info
 infos
 *.sh
 .air.toml
+Dockerfile.dev
 
 # Go
 bin
