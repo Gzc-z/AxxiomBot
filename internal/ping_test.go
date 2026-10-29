@@ -22,6 +22,9 @@ func loadText() []string {
 	if n := utf8.RuneCountInString(strings.Join(args, " ")); n > discordMaxLen {
 		return nil
 	}
+	if args[0] == "" {
+		return nil
+	}
 	return args
 }
 
@@ -41,6 +44,9 @@ func TestPing(t *testing.T) {
 
 	text := loadText()
 	if text == nil {
+		t.Log("nil")
+	}
+	if len(text) == 0 {
 		text = []string{"ping"}
 	}
 	if _, err := s.ChannelMessageSend(channel, strings.Join(text, " ")); err != nil {

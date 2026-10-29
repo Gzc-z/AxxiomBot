@@ -5,8 +5,8 @@ COMPOSE = docker compose -f docker-compose.yaml
 # config
 MSG_ARGS = $(filter-out $@,$(MAKECMDGOALS))
 MSG ?= $(MSG_ARGS)
-GOPATH = cmd/bot
-RUN = go run $(GOPATH)/main.go $(MSG_ARGS)
+PATHGO = cmd/bot
+RUN = go run $(PATHGO)/main.go $(MSG_ARGS)
 
 .PHONY: msg
 
@@ -52,4 +52,4 @@ test-ping:
 	@go test -v -count=1 -tags=integration -run '^TestPing' ./...
 
 msg:
-	@go test -v -count=1 -tags=integration -run '^TestPing' ./... -args "$(MSG)"
+	@go run ./internal/scripts/msg.go
