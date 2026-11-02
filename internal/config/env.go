@@ -2,7 +2,6 @@
 package config
 
 import (
-	"fmt"
 	"log"
 	"net"
 	"os"
@@ -73,7 +72,7 @@ func getEnv(envVar string) string {
 	key, exist := os.LookupEnv(envVar)
 	if !exist {
 		log.Println("Error: %s does'n exist\n" + envVar)
-		return fmt.Sprint(envVar)
+		return ""
 	}
 	return key
 }
