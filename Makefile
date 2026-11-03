@@ -26,12 +26,12 @@ logs:
 	@$(COMPOSE) logs $(APP) -f
 
 
-restart: build-app run
-reset: clean build-app run
+restart: build-axxiom run
+reset: clean build-axxiom run
 
 # --- build ---
 
-build:
+build-axxiom:
 	@docker build -t $(APP) .
 
 bash:
@@ -39,7 +39,7 @@ bash:
 
 # --- cleanup ---
 
-clean:
+cleanup:
 	@$(COMPOSE) down -v --remove-orphans
 	@$(COMPOSE) rm -vsf
 
