@@ -1,6 +1,7 @@
 name: axxiom
 services:
   axxiom:
+    stop_grace_period: 8s
     image: axxiom:latest
     build:
       context: .
