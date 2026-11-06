@@ -4,6 +4,7 @@ package bot
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"slices"
 	"strings"
 
@@ -20,11 +21,7 @@ type Bot struct {
 	AppID   string
 }
 
-type environments interface {
-	getEnvironments(cfg config.Config)
-}
-
-func NewBot(cfg config.Config) *Bot {
+func NewBot(cfg config.Config) (*Bot, error) {
 	session, err := discordgo.New("Bot " + cfg.Discord.Token)
 	if err != nil {
 		log.Fatal("something's wrong, can't create bot")
@@ -33,11 +30,16 @@ func NewBot(cfg config.Config) *Bot {
 
 	config.SetDeps(cfg)
 
+	app, err := session.Application("@me")
+	if err != nil {
+		slog.Error("session application @me", "Error", err.Error())
+		return nil, err
+	}
 	return &Bot{
 		Session: session,
 		GuildID: cfg.Discord.GuildID,
-		AppID:   cfg.Discord.AppID,
-	}
+		AppID:   app.ID,
+	}, nil
 }
 
 func (bot *Bot) Start() {
@@ -51,10 +53,11 @@ func (bot *Bot) Start() {
 		panic(err)
 	}
 
+	// TODO: verify which guilds have already been sent
 	// ds.AddHandler(onGuildCreate)
 
 	userBot, _ := ds.User("@me")
-	log.Printf("Logged in as: %v#%v", userBot.Username, userBot.Discriminator)
+	slog.Info(fmt.Sprintf("Logged in as: %v#%v", userBot.Username, userBot.Discriminator))
 }
 
 func (bot Bot) AddSessionEvents() {
@@ -75,17 +78,9 @@ func (bot Bot) Close() {
 
 	guilds := bot.listGuilds(ds)
 	for _, guild := range guilds {
-		go bot.commandDelete(guild)
+		bot.commandDelete(guild.ID)
 	}
-
-	// delete global
-	cmds, _ := ds.ApplicationCommands(bot.AppID, "")
-	for _, v := range cmds {
-		err := ds.ApplicationCommandDelete(bot.AppID, "", v.ID)
-		if err != nil {
-			log.Println(err)
-		}
-	}
+	bot.commandDelete("") // delete global commands
 }
 
 func (bot Bot) commandCreate(s *discordgo.Session, r *discordgo.Ready) {
@@ -93,21 +88,21 @@ func (bot Bot) commandCreate(s *discordgo.Session, r *discordgo.Ready) {
 	for _, guild := range guilds {
 		for _, v := range interactions.Commands {
 			go s.ApplicationCommandCreate(s.State.User.ID, guild.ID, v)
-			fmt.Printf("/%s created\n", v.Name)
+			slog.Info(fmt.Sprintf("%s command created: /%s\n", guild.ID, v.Name))
 		}
 	}
 }
 
-func (bot Bot) commandDelete(guild *discordgo.UserGuild) {
+func (bot Bot) commandDelete(guildID string) {
 	s := bot.Session
-	cmds, err := s.ApplicationCommands(bot.AppID, guild.ID)
+	cmds, err := s.ApplicationCommands(bot.AppID, guildID)
 	if err != nil {
-		log.Println(err)
+		slog.Error("Cannot delete command", "error", err.Error())
 	}
 	for _, v := range cmds {
-		err := s.ApplicationCommandDelete(bot.AppID, guild.ID, v.ID)
+		err := s.ApplicationCommandDelete(bot.AppID, guildID, v.ID)
 		if err != nil {
-			log.Println(err)
+			slog.Error("Cannot delete server command", "error", err.Error())
 		}
 		fmt.Printf("/%s deleted\n", v.Name)
 	}
@@ -116,7 +111,8 @@ func (bot Bot) commandDelete(guild *discordgo.UserGuild) {
 func (bot Bot) listGuilds(s *discordgo.Session) []*discordgo.UserGuild {
 	guilds, err := s.UserGuilds(100, "", "", false)
 	if err != nil {
-		log.Panicf("Cannot get guilds: %v", err)
+		slog.Warn("Cannot get guilds", "error", err.Error())
+		return nil
 	}
 
 	var allowedGuilds []*discordgo.UserGuild

@@ -33,7 +33,7 @@ func TestPing(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.Load()
-	bot := NewBot(cfg)
+	bot, _ := NewBot(cfg)
 	s := bot.Session
 
 	channel := os.Getenv("TEST_CHANNELID")

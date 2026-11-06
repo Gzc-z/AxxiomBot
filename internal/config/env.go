@@ -53,7 +53,6 @@ func Load() Config {
 	cfg := Config{
 		Discord: Discord{
 			GuildID: getEnv("DISCORD_GUILD_ID"),
-			AppID:   getEnv("APPLICATION_ID"),
 			Token:   getEnv("DISCORD_BOT_TOKEN"),
 		},
 		Minecraft: Minecraft{
@@ -91,10 +90,6 @@ func MinecraftAddress() string {
 
 func GetGuildID() string {
 	return cfg.Discord.GuildID
-}
-
-func GetAppID() string {
-	return cfg.Discord.AppID
 }
 
 func GetAIToken() string {

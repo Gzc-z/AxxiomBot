@@ -13,7 +13,10 @@ import (
 func main() {
 	cfg := config.Load()
 
-	discordBot := bot.NewBot(cfg)
+	discordBot, err := bot.NewBot(cfg)
+	if err != nil {
+		panic(err)
+	}
 
 	ctx, stop := signal.NotifyContext(
 		context.Background(),
