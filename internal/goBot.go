@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
-	"slices"
-	"strings"
 
 	"axxiom/internal/config"
 	"axxiom/internal/handlers"
@@ -85,10 +83,11 @@ func (bot Bot) Close() {
 
 func (bot Bot) commandCreate(s *discordgo.Session, r *discordgo.Ready) {
 	guilds := bot.listGuilds(s)
+	cmds := interactions.GetCommands()
 	for _, guild := range guilds {
-		for _, v := range interactions.Commands {
-			go s.ApplicationCommandCreate(s.State.User.ID, guild.ID, v)
-			slog.Info(fmt.Sprintf("%s command created: /%s\n", guild.ID, v.Name))
+		for _, v := range cmds {
+			go s.ApplicationCommandCreate(s.State.User.ID, guild.ID, v.Cmd)
+			slog.Info(fmt.Sprintf("%s command created: /%s\n", guild.ID, v.Cmd.Name))
 		}
 	}
 }
@@ -108,22 +107,19 @@ func (bot Bot) commandDelete(guildID string) {
 	}
 }
 
-func (bot Bot) listGuilds(s *discordgo.Session) []*discordgo.UserGuild {
-	guilds, err := s.UserGuilds(100, "", "", false)
-	if err != nil {
-		slog.Warn("Cannot get guilds", "error", err.Error())
-		return nil
-	}
+func (bot Bot) listGuilds(s *discordgo.Session) []*discordgo.Guild {
+	guilds := s.State.Guilds
 
-	var allowedGuilds []*discordgo.UserGuild
-	roles := strings.Split(bot.GuildID, ",")
-
-	for _, guild := range guilds {
-		if slices.Contains(roles, guild.ID) {
-			allowedGuilds = append(allowedGuilds, guild)
-		}
-	}
-	return allowedGuilds
+	return guilds
+	// var allowedGuilds []*discordgo.Guild
+	// roles := strings.Split(bot.GuildID, ",")
+	//
+	// for _, guild := range guilds {
+	// 	if slices.Contains(roles, guild.ID) {
+	// 		allowedGuilds = append(allowedGuilds, guild)
+	// 	}
+	// }
+	// return allowedGuilds
 }
 
 func onGuildCreate(s *discordgo.Session, g *discordgo.GuildCreate) {
