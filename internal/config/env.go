@@ -3,6 +3,7 @@ package config
 
 import (
 	"log"
+	"log/slog"
 	"net"
 	"os"
 	"path/filepath"
@@ -47,7 +48,7 @@ func Load() Config {
 
 	err := godotenv.Load(envPath)
 	if err != nil {
-		log.Println(err)
+		slog.Warn(err.Error())
 	}
 
 	cfg := Config{
