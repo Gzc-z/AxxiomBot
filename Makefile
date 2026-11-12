@@ -14,6 +14,7 @@ RUN = go run $(PATHGO)/main.go $(MSG_ARGS)
 
 run:
 	@$(COMPOSE) up $(APP) -d --force-recreate
+	@$(COMPOSE) logs $(APP) -f
 
 up:
 	@$(COMPOSE) up $(APP) -d
@@ -26,7 +27,8 @@ logs:
 	@$(COMPOSE) logs $(APP) -f
 
 
-restart: build-axxiom run
+restart:
+	@$(COMPOSE) restart $(APP)
 reset: clean build-axxiom run
 
 # --- build ---
