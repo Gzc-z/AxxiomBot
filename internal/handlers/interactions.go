@@ -46,7 +46,7 @@ func InteractionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	case discordgo.InteractionMessageComponent:
 		d := i.MessageComponentData()
 		key := d.CustomID
-		if key == "groupOptions" || len(d.Values) > 0 {
+		if key == "groupOptions" && len(d.Values) > 0 {
 			key = d.Values[0]
 		}
 		h = messageComponentInteractions[key]
@@ -80,6 +80,7 @@ func reply(s *discordgo.Session, in *discordgo.Interaction) {
 	if err == nil {
 		return
 	}
+
 	// Followup message failed
 	_, ferr := s.FollowupMessageCreate(in, true, &discordgo.WebhookParams{
 		Content: msg,
