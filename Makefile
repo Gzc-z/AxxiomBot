@@ -1,6 +1,13 @@
 # Container
 APP   = axxiom
-COMPOSE = docker compose -f docker-compose.dev.yaml
+
+# Compose
+DEV_COMPOSE := $(wildcard docker-compose.dev.yaml)
+ifeq ($(DEV_COMPOSE),)
+	COMPOSE = docker compose -f docker-compose.dev.yaml
+else
+    COMPOSE = docker compose -f docker-compose.yaml
+endif
 
 # config
 MSG_ARGS = $(filter-out $@,$(MAKECMDGOALS))
