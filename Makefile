@@ -45,7 +45,7 @@ build:
 
 # --- cleanup ---
 
-cleanup:
+clean:
 	@$(COMPOSE) down -v --remove-orphans
 	@$(COMPOSE) rm -vsf
 
