@@ -4,6 +4,7 @@ infos
 *.sh
 .air.toml
 Dockerfile.dev
+docker-compose.dev.yaml
 
 # Go
 bin

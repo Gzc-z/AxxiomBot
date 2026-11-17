@@ -1,6 +1,6 @@
 # Container
 APP   = axxiom
-COMPOSE = docker compose -f docker-compose.yaml
+COMPOSE = docker compose -f docker-compose.dev.yaml
 
 # config
 MSG_ARGS = $(filter-out $@,$(MAKECMDGOALS))
@@ -29,15 +29,12 @@ logs:
 
 restart:
 	@$(COMPOSE) restart $(APP)
-reset: clean build-axxiom run
 
 # --- build ---
 
-build-axxiom:
-	@docker build -t $(APP) .
+build:
+	@go build -v -o axxiom ./cmd/bot
 
-bash:
-	@$(COMPOSE) exec $(APP) /bin/env bash
 
 # --- cleanup ---
 
@@ -52,6 +49,9 @@ test:
 
 test-ping:
 	@go test -v -count=1 -tags=integration -run '^TestPing' ./...
+
+bash:
+	@$(COMPOSE) exec $(APP) /bin/env bash
 
 msg:
 	@go run ./internal/scripts/msg.go
