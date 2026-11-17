@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"slices"
+	"strings"
 
 	"axxiom/internal/config"
 	"axxiom/internal/handlers"
@@ -65,7 +67,7 @@ func (bot Bot) AddSessionEvents() {
 		handlers.InteractionCreate,
 	}
 	for _, handler := range handlers {
-		go ds.AddHandler(handler)
+		ds.AddHandler(handler)
 	}
 	go ds.AddHandler(bot.commandCreate)
 }
@@ -74,23 +76,60 @@ func (bot Bot) Close() {
 	ds := bot.Session
 	defer ds.Close()
 
-	guilds := bot.listGuilds(ds)
-	for _, guild := range guilds {
+	pg, _ := bot.listGuilds(ds)
+	for _, guild := range pg {
 		bot.commandDelete(guild.ID)
 	}
 	bot.commandDelete("") // delete global commands
 }
 
 func (bot Bot) commandCreate(s *discordgo.Session, r *discordgo.Ready) {
-	guilds := bot.listGuilds(s)
-	cmds := interactions.GetCommands()
-	for _, guild := range guilds {
-		for _, v := range cmds {
-			go s.ApplicationCommandCreate(s.State.User.ID, guild.ID, v.Cmd)
-			slog.Info(fmt.Sprintf("%s command created: /%s\n", guild.ID, v.Cmd.Name))
+	commands := interactions.GetCommands()
+
+	pg, prg := bot.listGuilds(s)
+	for _, guild := range pg {
+		_, err := s.ApplicationCommandBulkOverwrite(s.State.User.ID, guild.ID, publicCommands)
+		if err != nil {
+			slog.Error("sync commands", "guild_id", guild.ID, "err", err)
+			continue
+		}
+	}
+	for _, guild := range prg {
+		_, err := s.ApplicationCommandBulkOverwrite(s.State.User.ID, guild.ID, privateCommands)
+		if err != nil {
+			slog.Error("sync commands", "guild_id", guild.ID, "err", err)
+			continue
 		}
 	}
 }
+
+// for _, g := range bot.listGuilds(s) {
+// 	if _, err := s.ApplicationCommandBulkOverwrite(appID, g.ID, interactions.Commands); err != nil {
+// 	}
+// 	slog.Info("commands synced", "guild_id", g.ID, "count", len(interactions.Commands))
+// }
+
+//
+// for _, guild := range session.State.Guilds {
+//     guildCommands := make([]*discordgo.ApplicationCommand, 0)
+//
+//     guildCommands = append(guildCommands, publicCommands...)
+//
+//     if isAuthorizedGuild(guild.ID) {
+//         guildCommands = append(guildCommands, privateCommands...)
+//     }
+//
+//     _, err := session.ApplicationCommandBulkOverwrite(
+//         appID,
+//         guild.ID,
+//         guildCommands,
+//     )
+//
+//     if err != nil {
+//         log.Printf("Erro no servidor %s: %v", guild.ID, err)
+//         continue
+//     }
+// }
 
 func (bot Bot) commandDelete(guildID string) {
 	s := bot.Session
@@ -107,19 +146,19 @@ func (bot Bot) commandDelete(guildID string) {
 	}
 }
 
-func (bot Bot) listGuilds(s *discordgo.Session) []*discordgo.Guild {
+// list guilds returns public and private guilds
+func (bot Bot) listGuilds(s *discordgo.Session) ([]*discordgo.Guild, []*discordgo.Guild) {
 	guilds := s.State.Guilds
 
-	return guilds
-	// var allowedGuilds []*discordgo.Guild
-	// roles := strings.Split(bot.GuildID, ",")
-	//
-	// for _, guild := range guilds {
-	// 	if slices.Contains(roles, guild.ID) {
-	// 		allowedGuilds = append(allowedGuilds, guild)
-	// 	}
-	// }
-	// return allowedGuilds
+	var allowedGuilds []*discordgo.Guild
+	roles := strings.Split(bot.GuildID, ",")
+
+	for _, guild := range guilds {
+		if slices.Contains(roles, guild.ID) {
+			allowedGuilds = append(allowedGuilds, guild)
+		}
+	}
+	return guilds, allowedGuilds
 }
 
 func onGuildCreate(s *discordgo.Session, g *discordgo.GuildCreate) {

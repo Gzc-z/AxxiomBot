@@ -4,15 +4,23 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-type cmds struct {
+type command struct {
+	Cmd *discordgo.ApplicationCommand
+
 	// enabled for public access
-	Enabled bool
-	Cmd     *discordgo.ApplicationCommand
+	Public bool
+	// TODO: make use of
+	// Run    func(s *discordgo.Session, i *discordgo.InteractionCreate) error
 }
 
-var commands = []cmds{
+type scoped struct {
+	Global *discordgo.ApplicationCommand
+	Guild  *discordgo.ApplicationCommand
+}
+
+var commands = []command{
 	{
-		Enabled: false,
+		Public: false,
 		Cmd: &discordgo.ApplicationCommand{
 			Name:        "pts",
 			Description: "sistema de pontuação",
@@ -21,7 +29,7 @@ var commands = []cmds{
 		},
 	},
 	{
-		Enabled: true,
+		Public: true,
 		Cmd: &discordgo.ApplicationCommand{
 			Name:        "axx",
 			Description: "AI",
@@ -39,13 +47,17 @@ var commands = []cmds{
 	},
 }
 
-// GetCommands get application commands with infos and wheter is enabled
-func GetCommands() []cmds {
-	cmd := make([]cmds, 0)
-	for _, c := range commands {
-		if c.Enabled {
-			cmd = append(cmd, c)
+// Commands get application commands with infos and wheter is enabled
+func Commands() struct{} {
+	var pc []*discordgo.ApplicationCommand
+	var prc []*discordgo.ApplicationCommand
+
+	for _, command := range commands {
+		if command.Public {
+			pc = append(pc, command.Cmd)
+		} else {
+			prc = append(prc, command.Cmd)
 		}
 	}
-	return cmd
+	return commands
 }
