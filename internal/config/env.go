@@ -8,24 +8,26 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"sync"
 
 	"github.com/joho/godotenv"
 )
 
-var (
-	cfg  *Config
-	once sync.Once
-)
+var cfg Config
 
 type Minecraft struct {
 	IP   string
 	PORT string
 }
 type Discord struct {
+	// private GuildID
+	// used when want to private commands to one guild
 	GuildID string
-	AppID   string
-	Token   string
+
+	// bot AppID
+	AppID string
+
+	// discord portal token
+	Token string
 }
 type AI struct {
 	AIToken string
@@ -51,7 +53,7 @@ func Load() Config {
 		slog.Warn(err.Error())
 	}
 
-	cfg := Config{
+	cfg = Config{
 		Discord: Discord{
 			GuildID: getEnv("DISCORD_GUILD_ID"),
 			Token:   getEnv("DISCORD_BOT_TOKEN"),
@@ -75,10 +77,6 @@ func getEnv(envVar string) string {
 		return ""
 	}
 	return key
-}
-
-func SetDeps(deps Config) {
-	cfg = &deps
 }
 
 func MinecraftServer() Minecraft {

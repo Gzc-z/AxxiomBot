@@ -21,14 +21,12 @@ type Bot struct {
 	AppID   string
 }
 
-func NewBot(cfg config.Config) (*Bot, error) {
-	session, err := discordgo.New("Bot " + cfg.Discord.Token)
+func NewBot(cfg config.Discord) (*Bot, error) {
+	session, err := discordgo.New("Bot " + cfg.Token)
 	if err != nil {
 		log.Fatal("something's wrong, can't create bot")
 		panic(1)
 	}
-
-	config.SetDeps(cfg)
 
 	app, err := session.Application("@me")
 	if err != nil {
@@ -37,7 +35,7 @@ func NewBot(cfg config.Config) (*Bot, error) {
 	}
 	return &Bot{
 		Session: session,
-		GuildID: cfg.Discord.GuildID,
+		GuildID: cfg.GuildID,
 		AppID:   app.ID,
 	}, nil
 }
@@ -84,18 +82,18 @@ func (bot Bot) Close() {
 }
 
 func (bot Bot) commandCreate(s *discordgo.Session, r *discordgo.Ready) {
-	commands := interactions.GetCommands()
+	commands := interactions.Commands()
 
 	pg, prg := bot.listGuilds(s)
 	for _, guild := range pg {
-		_, err := s.ApplicationCommandBulkOverwrite(s.State.User.ID, guild.ID, publicCommands)
+		_, err := s.ApplicationCommandBulkOverwrite(s.State.User.ID, guild.ID, commands.Global)
 		if err != nil {
 			slog.Error("sync commands", "guild_id", guild.ID, "err", err)
 			continue
 		}
 	}
 	for _, guild := range prg {
-		_, err := s.ApplicationCommandBulkOverwrite(s.State.User.ID, guild.ID, privateCommands)
+		_, err := s.ApplicationCommandBulkOverwrite(s.State.User.ID, guild.ID, commands.Guild)
 		if err != nil {
 			slog.Error("sync commands", "guild_id", guild.ID, "err", err)
 			continue

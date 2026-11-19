@@ -1,3 +1,5 @@
+// TODO: find a way to sort commands with servers
+
 package interactions
 
 import (
@@ -9,13 +11,17 @@ type command struct {
 
 	// enabled for public access
 	Public bool
+
 	// TODO: make use of
 	// Run    func(s *discordgo.Session, i *discordgo.InteractionCreate) error
 }
 
 type scoped struct {
-	Global *discordgo.ApplicationCommand
-	Guild  *discordgo.ApplicationCommand
+	// public commands
+	Global []*discordgo.ApplicationCommand
+
+	// private commands
+	Guild []*discordgo.ApplicationCommand
 }
 
 var commands = []command{
@@ -47,17 +53,15 @@ var commands = []command{
 	},
 }
 
-// Commands get application commands with infos and wheter is enabled
-func Commands() struct{} {
-	var pc []*discordgo.ApplicationCommand
-	var prc []*discordgo.ApplicationCommand
-
-	for _, command := range commands {
-		if command.Public {
-			pc = append(pc, command.Cmd)
+// Commands get application commands with infos and whether is enabled
+func Commands() scoped {
+	var comm scoped
+	for _, c := range commands {
+		if c.Public {
+			comm.Global = append(comm.Global, c.Cmd)
 		} else {
-			prc = append(prc, command.Cmd)
+			comm.Guild = append(comm.Guild, c.Cmd)
 		}
 	}
-	return commands
+	return comm
 }
