@@ -93,7 +93,7 @@ func (bot Bot) commandCreate(s *discordgo.Session, r *discordgo.Ready) {
 		}
 	}
 	for _, guild := range prg {
-		_, err := s.ApplicationCommandBulkOverwrite(s.State.User.ID, guild.ID, commands.Guild)
+		_, err := s.ApplicationCommandBulkOverwrite(s.State.User.ID, guild.ID, commands.Private)
 		if err != nil {
 			slog.Error("sync commands", "guild_id", guild.ID, "err", err)
 			continue

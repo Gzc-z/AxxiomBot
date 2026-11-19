@@ -21,7 +21,7 @@ type scoped struct {
 	Global []*discordgo.ApplicationCommand
 
 	// private commands
-	Guild []*discordgo.ApplicationCommand
+	Private []*discordgo.ApplicationCommand
 }
 
 var commands = []command{
@@ -60,7 +60,7 @@ func Commands() scoped {
 		if c.Public {
 			comm.Global = append(comm.Global, c.Cmd)
 		} else {
-			comm.Guild = append(comm.Guild, c.Cmd)
+			comm.Private = append(comm.Private, c.Cmd)
 		}
 	}
 	return comm
